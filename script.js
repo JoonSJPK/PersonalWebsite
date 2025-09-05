@@ -152,7 +152,7 @@ function openProject(projectId) {
             ]
         },
         project5: {
-            title: "Pull-Up Tracking App",
+            title: "Pull-Up Social Media App",
             description: "A social media of what people will do. Make organizing hangouts a breeze",
             technologies: ["Swift", "JavaScript", "Firebase", "Mobile Development"],
             features: [
