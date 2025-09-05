@@ -70,15 +70,13 @@ function openProject(projectId) {
     const projectDetails = {
         project1: {
             title: "Camera Project",
-            description: "An advanced camera system with custom hardware and software integration. Features high-resolution imaging, real-time processing, and custom control interfaces for professional photography applications.",
-            technologies: ["C++", "OpenCV", "Python", "Arduino", "Hardware Design"],
+            description: "An 4k camera system with custom hardware. Features high-resolution imaging, real-time processing, and custom control interfaces for professional photography applications.",
+            technologies: ["Python","3D printing", "Arduino", "Hardware Design"],
             features: [
                 "High-resolution image capture",
-                "Real-time image processing",
                 "Custom hardware integration",
-                "Advanced control interfaces",
-                "Professional photography features",
-                "Custom firmware development"
+                "Custom control interfaces",
+                "Python"
             ],
             images: [
                 "websiteImages/camera/7AA4DC16-AB79-402F-891A-7157628E1E73.JPG",
@@ -98,14 +96,12 @@ function openProject(projectId) {
         },
         project2: {
             title: "Custom Computer Case",
-            description: "A handcrafted computer case with custom design and advanced cable management. Features modular design, custom cooling solutions, and professional-grade construction for high-performance computing.",
-            technologies: ["CAD Design", "3D Printing", "Metalworking", "Electronics", "Thermal Management"],
+            description: "A handcrafted computer case with custom design and custom cable management. Features modular design and custom cooling solutions for high-performance computing.",
+            technologies: ["CAD Design", "3D Printing", "Electronics", "Thermal Management"],
             features: [
                 "Custom modular design",
-                "Advanced cable management",
-                "Custom cooling solutions",
-                "Professional construction",
-                "High-performance optimization",
+                "Cable management",
+                "Thermal optimization",
                 "Unique aesthetic design"
             ],
             images: [
@@ -118,15 +114,12 @@ function openProject(projectId) {
         },
         project3: {
             title: "Electric Bike Conversion",
-            description: "A custom electric bike conversion with advanced battery management system. Features regenerative braking, custom motor control, and intelligent power management for optimal performance and range.",
-            technologies: ["Electronics", "Battery Management", "Motor Control", "Arduino", "Mechanical Design"],
+            description: "A custom electric bike with a completely custom frame. Features motor control, single 1000W motor with a 50V accumulator.",
+            technologies: ["Electronics", "Custom frame", "Motor Control", "Mechanical Design"],
             features: [
-                "Custom battery management system",
-                "Regenerative braking",
-                "Intelligent power management",
-                "Custom motor control",
-                "Range optimization",
-                "Safety systems integration"
+                "Custom hand-made frame",
+                "Motor control",
+                "Custom rear axle hub"
             ],
             images: [
                 "websiteImages/eBike/IMG_2883.png",
@@ -142,15 +135,12 @@ function openProject(projectId) {
         },
         project4: {
             title: "Hotswap Mechanical Mouse",
-            description: "A custom mechanical mouse with hot-swappable switches and RGB lighting. Features custom PCB design, 3D printed housing, and advanced sensor integration for gaming and productivity applications.",
-            technologies: ["PCB Design", "3D Printing", "Electronics", "Firmware", "Mechanical Design"],
+            description: "A custom mechanical mouse with hot-swappable switches and RGB lighting. Features 3D printed housing and a custom hotswap switch implementation",
+            technologies: ["3D Printing", "Electronics", "Mechanical Design"],
             features: [
                 "Hot-swappable mechanical switches",
-                "Custom RGB lighting system",
-                "High-precision sensor",
                 "3D printed housing",
-                "Custom PCB design",
-                "Advanced firmware"
+                "hot swap mechanism"
             ],
             images: [
                 "websiteImages/HotswapMouse/1000028982.JPG",
@@ -163,14 +153,12 @@ function openProject(projectId) {
         },
         project5: {
             title: "Pull-Up Tracking App",
-            description: "A mobile application for tracking and analyzing pull-up workout progress. Features workout logging, progress visualization, form analysis, and personalized training recommendations.",
-            technologies: ["React Native", "JavaScript", "Firebase", "Charts.js", "Mobile Development"],
+            description: "A social media of what people will do. Make organizing hangouts a breeze",
+            technologies: ["Swift", "JavaScript", "Firebase", "Mobile Development"],
             features: [
-                "Workout logging and tracking",
-                "Progress visualization",
-                "Form analysis",
+                "Social Media",
+                "Apple Wallet plugin",
                 "Personalized recommendations",
-                "Social features",
                 "Data export capabilities"
             ],
             images: [
@@ -184,15 +172,13 @@ function openProject(projectId) {
         },
         project6: {
             title: "TEG Mouse Project",
-            description: "A thermoelectric generator mouse with energy harvesting capabilities. Features custom thermoelectric modules, power management circuits, and energy storage for sustainable computing applications.",
-            technologies: ["Thermoelectric Design", "Power Management", "Electronics", "Energy Storage", "PCB Design"],
+            description: "A thermoelectric generator mouse with energy harvesting capabilities. Features custom thermoelectric modules, Transformer circuits",
+            technologies: ["Thermoelectric Design", "Power Management", "Transformer", "Electronics"],
             features: [
                 "Thermoelectric energy harvesting",
-                "Power management circuits",
-                "Energy storage systems",
-                "Custom PCB design",
-                "Sustainable computing",
-                "Real-time power monitoring"
+                "Transformer circuits",
+                "Baterryless",
+                "Sustainable electronics"
             ],
             images: [
                 "websiteImages/TEGMouse/1000029237.JPG",
