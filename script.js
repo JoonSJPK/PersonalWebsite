@@ -449,51 +449,14 @@ function openVideo(videoUrl) {
 
 // Resume download function
 function downloadResume() {
-    // Create a simple resume content (in a real scenario, this would be a PDF file)
-    const resumeContent = `
-        Saejoon Park
-        Electrical and Computer Student at Cornell Univesity
-        
-        Contact Information:
-        Email: park.p.saejoon@gmail.com
-        Phone: +1 (571) 373-7778
-        Location: Burke, VA 22015
-        
-        Education:
-        Bachelor of Science in Electical and Computer Engineering
-        Cornell University
-        Expected Graduation: 2028
-        
-        Skills:
-        • Programming Languages: Python, JavaScript, Java, C++
-        • Frameworks: React, Node.js, Express
-        • Tools: Docker, AWS, Git
-        • Databases: MongoDB, PostgreSQL
-        
-        Experience:
-        • Software Engineering Intern - Tech Company (2023)
-        • Research Assistant - AI Lab (2022-2023)
-        • Freelance Web Developer (2021-Present)
-        
-        Projects:
-        • Mobile Weather App - React Native application
-        • AI Chatbot - Natural language processing
-        • E-commerce Platform - Full-stack solution
-        • Data Visualization Tool - Business analytics
-        • 2D Game Engine - C++ and OpenGL
-        • Database Management System - Distributed system
-        • Network Security Tool - Penetration testing
-    `;
-    
-    const blob = new Blob([resumeContent], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
+    // Create a link to download the actual PDF resume
     const a = document.createElement('a');
-    a.href = url;
-    a.download = 'Saejoo_Park_Resume.txt';
+    a.href = 'Resume/SaejoonParkResume.pdf';
+    a.download = 'Saejoon_Park_Resume.pdf';
+    a.target = '_blank';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
 }
 
 // Intersection Observer for animations
