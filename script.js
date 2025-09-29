@@ -158,8 +158,8 @@ function openProject(projectId) {
             features: [
                 "Social Media",
                 "Apple Wallet plugin",
-                "Personalized recommendations",
-                "Data export capabilities"
+                "Efficient Hangouts",
+                "Automatic Group Chats"
             ],
             images: [
                 "websiteImages/PullUPApp/IMG_3357.PNG",
