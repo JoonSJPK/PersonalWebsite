@@ -437,8 +437,8 @@ function openVideo(videoUrl) {
 function downloadResume() {
     // Create a link to download the actual PDF resume
     const a = document.createElement('a');
-    a.href = 'Resume/SaejoonParkResume.pdf';
-    a.download = 'Saejoon_Park_Resume.pdf';
+    a.href = 'Resume/Park_Saejoon_Resume.pdf';
+    a.download = 'Park_Saejoon_Resume.pdf';
     a.target = '_blank';
     document.body.appendChild(a);
     a.click();
