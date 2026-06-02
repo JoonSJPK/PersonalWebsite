@@ -3,265 +3,434 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saejoon Park - Engineering Student</title>
+    <title>SAEJOON PARK — ECE @ Cornell</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
+    <div id="cursor-follower" aria-hidden="true"></div>
+
+    <header class="header" id="header">
         <nav class="nav">
             <div class="nav-brand">
-                <h1>Saejoon Park</h1>
+                <a href="#hero" class="brand-link mono">SP_</a>
             </div>
-            <ul class="nav-links">
-                <li><a href="#about" class="nav-link">About</a></li>
-                <li><a href="#videos" class="nav-link">Videos</a></li>
-                <li><a href="#projects" class="nav-link">Projects</a></li>
-                <li><a href="#skills" class="nav-link">Skills</a></li>
-                <li><a href="#contact" class="nav-link">Contact</a></li>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#about"    class="nav-link mono">[ABOUT]</a></li>
+                <li><a href="#videos"   class="nav-link mono">[VIDEOS]</a></li>
+                <li><a href="#projects" class="nav-link mono">[PROJECTS]</a></li>
+                <li><a href="#skills"   class="nav-link mono">[SKILLS]</a></li>
+                <li><a href="#contact"  class="nav-link mono">[CONTACT]</a></li>
             </ul>
-            <div class="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
+            <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
         </nav>
     </header>
 
-    <!-- Main Content -->
     <main>
-        <!-- About Section -->
+
+        <!-- ── HERO ── -->
+        <section id="hero" class="hero-section">
+            <canvas id="asciiCanvas" aria-hidden="true"></canvas>
+            <div class="hero-container">
+                <div class="hero-name-block">
+                    <div class="hero-rule" aria-hidden="true"></div>
+                    <h1 class="hero-name mono">SAEJOON<br>PARK</h1>
+                    <div class="hero-rule" aria-hidden="true"></div>
+                </div>
+                <div class="hero-meta">
+                    <p class="hero-subtitle mono" id="heroSubtitle" aria-label="ECE at Cornell University"></p>
+                    <div class="hero-tags">
+                        <span class="tag mono">[ECE]</span>
+                        <span class="tag mono">[HARDWARE]</span>
+                        <span class="tag mono">[EMBEDDED]</span>
+                        <span class="tag mono">[MOBILE]</span>
+                    </div>
+                </div>
+                <a href="#about" class="hero-scroll mono" aria-label="Scroll to about">&#x2500;&#x2500; SCROLL &#x2500;&#x2500;</a>
+            </div>
+        </section>
+
+        <!-- ── ABOUT ── -->
         <section id="about" class="section about-section">
             <div class="container">
-                <div class="about-content">
-                    <div class="about-text">
-                        <h2 class="section-title">About Me</h2>
-                        <p class="about-description">
-                            Hello! I'm Saejoon Park, an aspiring Electrical and Computer Engineer currently pursuing my Bachelor of Science at Cornell University. I'm passionate about innovation and creating impactful engineering solutions.
+                <div class="section-header reveal">
+                    <span class="section-number mono">01.</span>
+                    <div class="section-line"></div>
+                    <span class="section-label mono">ABOUT</span>
+                </div>
+                <div class="about-content" id="aboutContent">
+                    <pre class="about-portrait reveal" id="asciiPortrait" aria-label="ASCII portrait of Saejoon Park"></pre>
+                    <div class="about-text reveal">
+                        <h2 class="about-name mono">Saejoon Park</h2>
+                        <p class="about-bio newsreader">
+                            Hello &#x2014; I'm an aspiring Electrical and Computer Engineer pursuing my Bachelor of Science at
+                            <span class="term-hover" data-tip="Ithaca, NY &middot; Ivy League">Cornell University</span>.
+                            Passionate about building things that <em>work</em>: from
+                            <span class="term-hover" data-tip="Motors, PCBs, custom frames">hardware</span> you can hold
+                            to <span class="term-hover" data-tip="Swift, Firebase, iOS">software</span> you can use.
                         </p>
-                        <!--
-                        <div class="about-stats">
-                            <div class="stat">
-                                <h3>3+</h3>
-                                <p>Years of Experience</p>
-                            </div>
-                            <div class="stat">
-                                <h3>20+</h3>
-                                <p>Projects Completed</p>
-                            </div>
-                            <div class="stat">
-                                <h3>5+</h3>
-                                <p>Technologies Mastered</p>
-                            </div>
+                        <div class="about-stack">
+                            <span class="stack-label mono">// CURRENTLY</span>
+                            <p class="stack-text newsreader">Cornell University &middot; ECE &middot; Class of 2027</p>
                         </div>
-                    -->
-                    </div>
-                    <div class="about-image">
-                        <div class="image-placeholder">
-                            <img src="Resume/SaejoonPark.png" alt="Saejoon Park" style="width: 100%; height: 100%; object-fit: cover; border-radius: 20px;">
+                        <div class="about-tags">
+                            <span class="tag mono">[PYTHON]</span>
+                            <span class="tag mono">[C++]</span>
+                            <span class="tag mono">[SWIFT]</span>
+                            <span class="tag mono">[ARDUINO]</span>
+                            <span class="tag mono">[FUSION360]</span>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Videos Section -->
+        <!-- ── VIDEOS ── -->
         <section id="videos" class="section videos-section">
             <div class="container">
-                <h2 class="section-title">Videos</h2>
+                <div class="section-header reveal">
+                    <span class="section-number mono">02.</span>
+                    <div class="section-line"></div>
+                    <span class="section-label mono">VIDEOS</span>
+                </div>
                 <div class="videos-grid">
-                    <div class="video-card" onclick="openVideo('https://youtu.be/CwnOLpYsyiE')">
-                        <div class="video-thumbnail">
-                            <iframe src="https://www.youtube.com/embed/CwnOLpYsyiE" frameborder="0" allowfullscreen></iframe>
+                    <div class="video-entry reveal">
+                        <div class="video-label mono">01. COMPUTER VISION &#xD7; GLOVE MOUSE</div>
+                        <div class="video-frame-wrap" data-vid="CwnOLpYsyiE" onclick="loadVideo(this)" role="button" tabindex="0" aria-label="Play: Computer Vision x Glove Mouse">
+                            <div class="video-facade">
+                                <img src="https://img.youtube.com/vi/CwnOLpYsyiE/hqdefault.jpg" alt="Computer Vision x Glove Mouse thumbnail" loading="lazy">
+                                <div class="video-play-btn">
+                                    <div class="video-play-icon">&#x25B6;</div>
+                                    <span class="video-play-label">PLAY</span>
+                                </div>
+                            </div>
                         </div>
-                        <h3>Computer Vision x Glove Mouse</h3>
-                        <p>Computer vision implementation for glove-based mouse control system</p>
                     </div>
-                    <div class="video-card" onclick="openVideo('https://youtu.be/FmShcpANS84')">
-                        <div class="video-thumbnail">
-                            <iframe src="https://www.youtube.com/embed/FmShcpANS84" frameborder="0" allowfullscreen></iframe>
+                    <div class="video-entry reveal">
+                        <div class="video-label mono">02. CONDUCTIVE TIPS &#xD7; GLOVE MOUSE</div>
+                        <div class="video-frame-wrap" data-vid="FmShcpANS84" onclick="loadVideo(this)" role="button" tabindex="0" aria-label="Play: Conductive Finger Tips x Glove Mouse">
+                            <div class="video-facade">
+                                <img src="https://img.youtube.com/vi/FmShcpANS84/hqdefault.jpg" alt="Conductive Finger Tips x Glove Mouse thumbnail" loading="lazy">
+                                <div class="video-play-btn">
+                                    <div class="video-play-icon">&#x25B6;</div>
+                                    <span class="video-play-label">PLAY</span>
+                                </div>
+                            </div>
                         </div>
-                        <h3>Conductive Finger Tips x Glove Mouse</h3>
-                        <p>Conductive fingertip implementation for enhanced glove mouse interaction</p>
                     </div>
-                    <div class="video-card" onclick="openVideo('https://youtu.be/v5UjKmCHbAc')">
-                        <div class="video-thumbnail">
-                            <iframe src="https://www.youtube.com/embed/v5UjKmCHbAc" frameborder="0" allowfullscreen></iframe>
+                    <div class="video-entry reveal">
+                        <div class="video-label mono">03. DIY E-BIKE V1</div>
+                        <div class="video-frame-wrap" data-vid="v5UjKmCHbAc" onclick="loadVideo(this)" role="button" tabindex="0" aria-label="Play: DIY E-Bike V1">
+                            <div class="video-facade">
+                                <img src="https://img.youtube.com/vi/v5UjKmCHbAc/hqdefault.jpg" alt="DIY E-Bike V1 thumbnail" loading="lazy">
+                                <div class="video-play-btn">
+                                    <div class="video-play-icon">&#x25B6;</div>
+                                    <span class="video-play-label">PLAY</span>
+                                </div>
+                            </div>
                         </div>
-                        <h3>DIY E-Bike V1</h3>
-                        <p>Custom Electric Bike</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Projects Section -->
+        <!-- ── PROJECTS ── -->
         <section id="projects" class="section projects-section">
             <div class="container">
-                <h2 class="section-title">Projects</h2>
-                <div class="projects-grid">
-                    <div class="project-card" onclick="openProject('project1')">
-                        <div class="project-image" style="background-image: url('websiteImages/camera/7AA4DC16-AB79-402F-891A-7157628E1E73.JPG'); background-size: cover; background-position: center;"></div>
-                        <h3>Camera Project</h3>
-                        <p>Camera system with custom hardware and software integration</p>
+                <div class="section-header reveal">
+                    <span class="section-number mono">03.</span>
+                    <div class="section-line"></div>
+                    <span class="section-label mono">PROJECTS</span>
+                </div>
+                <div class="projects-list">
+
+                    <div class="project-entry reveal" onclick="openProject('project1')" tabindex="0" role="button" aria-label="Political AI Camera">
+                        <div class="project-index mono">01.</div>
+                        <div class="project-box">
+                            <div class="project-image-wrap">
+                                <img src="websiteImages/camera/7AA4DC16-AB79-402F-891A-7157628E1E73.JPG" alt="Political AI Camera" loading="lazy">
+                            </div>
+                            <div class="project-info">
+                                <h3 class="project-title mono">Political AI Camera</h3>
+                                <p class="project-desc newsreader">Raspberry Pi hardware with a 12.1 MP sensor and Picamera2 library. Calls OpenAI&rsquo;s gpt-image-1 model to output multiple political perspectives on a captured image.</p>
+                                <div class="project-tags">
+                                    <span class="tag mono">[RASPBERRY PI]</span>
+                                    <span class="tag mono">[PYTHON]</span>
+                                    <span class="tag mono">[OPENAI API]</span>
+                                    <span class="tag mono">[PICAMERA2]</span>
+                                </div>
+                                <span class="project-cta mono">&gt;_ VIEW PROJECT</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="project-card" onclick="openProject('project2')">
-                        <div class="project-image" style="background-image: url('websiteImages/ComputerCase/1000028452.JPG'); background-size: cover; background-position: center;"></div>
-                        <h3>Custom Computer Case</h3>
-                        <p>Handcrafted computer case with custom design and cable management</p>
+
+                    <div class="project-entry reveal" onclick="openProject('project2')" tabindex="0" role="button" aria-label="Custom Computer Case">
+                        <div class="project-index mono">02.</div>
+                        <div class="project-box">
+                            <div class="project-image-wrap">
+                                <img src="websiteImages/ComputerCase/1000028452.JPG" alt="Custom Computer Case" loading="lazy">
+                            </div>
+                            <div class="project-info">
+                                <h3 class="project-title mono">Custom Computer Case</h3>
+                                <p class="project-desc newsreader">Handcrafted case with a modular chassis, fully custom cable routing, and engineered airflow channels &mdash; built to exact performance and aesthetic specifications.</p>
+                                <div class="project-tags">
+                                    <span class="tag mono">[CAD]</span>
+                                    <span class="tag mono">[3D PRINT]</span>
+                                    <span class="tag mono">[THERMAL]</span>
+                                </div>
+                                <span class="project-cta mono">&gt;_ VIEW PROJECT</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="project-card" onclick="openProject('project3')">
-                        <div class="project-image" style="background-image: url('websiteImages/eBike/IMG_2917.png'); background-size: cover; background-position: center;"></div>
-                        <h3>Electric Bike Conversion</h3>
-                        <p>Custom electric bike</p>
+
+                    <div class="project-entry reveal" onclick="openProject('project3')" tabindex="0" role="button" aria-label="Steel Electric Bike">
+                        <div class="project-index mono">03.</div>
+                        <div class="project-box">
+                            <div class="project-image-wrap">
+                                <img src="websiteImages/eBike/IMG_2883.png" alt="Steel Electric Bike" loading="lazy">
+                            </div>
+                            <div class="project-info">
+                                <h3 class="project-title mono">Steel Electric Bike</h3>
+                                <p class="project-desc newsreader">Custom-cut and assembled steel chassis with a 1000W motor and 50V accumulator &mdash; every tube cut, welded, and fitted by hand.</p>
+                                <div class="project-tags">
+                                    <span class="tag mono">[STEEL FABRICATION]</span>
+                                    <span class="tag mono">[MOTOR CTRL]</span>
+                                    <span class="tag mono">[ELECTRONICS]</span>
+                                </div>
+                                <span class="project-cta mono">&gt;_ VIEW PROJECT</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="project-card" onclick="openProject('project4')">
-                        <div class="project-image" style="background-image: url('websiteImages/HotswapMouse/1000029643.JPG'); background-size: cover; background-position: center;"></div>
-                        <h3>Hotswap Mechanical Mouse</h3>
-                        <p>Custom 3D printed mouse with hot-swappable switches</p>
+
+                    <div class="project-entry reveal" onclick="openProject('project5')" tabindex="0" role="button" aria-label="Pull-Up Social App">
+                        <div class="project-index mono">04.</div>
+                        <div class="project-box">
+                            <div class="project-image-wrap project-image-portrait">
+                                <img src="websiteImages/PullUPApp/IMG_3357.PNG" alt="Pull-Up Social App" loading="lazy">
+                            </div>
+                            <div class="project-info">
+                                <h3 class="project-title mono">Pull-Up Social App</h3>
+                                <p class="project-desc newsreader">iOS social platform built around what people <em>will</em> do &mdash; automatic group chats, Apple Wallet integration, and friction-free hangout coordination.</p>
+                                <div class="project-tags">
+                                    <span class="tag mono">[SWIFT]</span>
+                                    <span class="tag mono">[FIREBASE]</span>
+                                    <span class="tag mono">[iOS]</span>
+                                </div>
+                                <span class="project-cta mono">&gt;_ VIEW PROJECT</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="project-card" onclick="openProject('project5')">
-                        <div class="project-image" style="background-image: url('websiteImages/PullUPApp/appLogo.PNG'); background-size: cover; background-position: center;"></div>
-                        <h3>Pull-Up Social Media App</h3>
-                        <p>Social Media of what people will do</p>
+
+                    <div class="project-entry reveal" onclick="openProject('project6')" tabindex="0" role="button" aria-label="TEG Mouse">
+                        <div class="project-index mono">05.</div>
+                        <div class="project-box">
+                            <div class="project-image-wrap">
+                                <img src="websiteImages/TEGMouse/1000029237.JPG" alt="TEG Mouse" loading="lazy">
+                            </div>
+                            <div class="project-info">
+                                <h3 class="project-title mono">TEG Mouse</h3>
+                                <p class="project-desc newsreader">Patent Pending. Hand thermal energy powers this mouse via TEG modules and a transformer that steps a 20mV output up to 3.3V &mdash; no battery required.</p>
+                                <div class="project-tags">
+                                    <span class="tag mono">[THERMOELECTRIC]</span>
+                                    <span class="tag mono">[TRANSFORMER]</span>
+                                    <span class="tag mono">[PATENT PENDING]</span>
+                                </div>
+                                <span class="project-cta mono">&gt;_ VIEW PROJECT</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="project-card" onclick="openProject('project6')">
-                        <div class="project-image" style="background-image: url('websiteImages/TEGMouse/1000029340.JPG'); background-size: cover; background-position: center;"></div>
-                        <h3>TEG Mouse Project</h3>
-                        <p>Thermoelectric generator mouse with energy harvesting capabilities</p>
-                    <!--
+
+                    <div class="project-entry reveal" onclick="openProject('project_audio')" tabindex="0" role="button" aria-label="Audio Signal Decoding Circuit">
+                        <div class="project-index mono">06.</div>
+                        <div class="project-box">
+                            <div class="project-image-wrap">
+                                <div class="project-placeholder">
+                                    <span>&#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;</span>
+                                    <span>PHOTOS</span>
+                                    <span>COMING</span>
+                                    <span>&#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;</span>
+                                </div>
+                            </div>
+                            <div class="project-info">
+                                <h3 class="project-title mono">Audio Signal Decoding Circuit</h3>
+                                <p class="project-desc newsreader">Designed and built a 6th-order MFB bandpass filter to extract encoded audio secrets. Automated frequency response sweeps and safely eliminated multi-volt DC offsets.</p>
+                                <div class="project-tags">
+                                    <span class="tag mono">[ANALOG DESIGN]</span>
+                                    <span class="tag mono">[MFB FILTER]</span>
+                                    <span class="tag mono">[SIGNAL PROC]</span>
+                                </div>
+                                <span class="project-cta mono">&gt;_ VIEW PROJECT</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="project-card" onclick="openProject('project7')">
-                        <div class="project-image" style="background-image: url('websiteImages/camera/7AA4DC16-AB79-402F-891A-7157628E1E73.JPG'); background-size: cover; background-position: center;"></div>
-                        <h3>Additional Project</h3>
-                        <p>Future project placeholder for additional work</p>
+
+                    <div class="project-entry reveal" onclick="openProject('project_watch')" tabindex="0" role="button" aria-label="Sensory Overload Watch">
+                        <div class="project-index mono">07.</div>
+                        <div class="project-box">
+                            <div class="project-image-wrap">
+                                <div class="project-placeholder">
+                                    <span>&#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;</span>
+                                    <span>PHOTOS</span>
+                                    <span>COMING</span>
+                                    <span>&#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;</span>
+                                </div>
+                            </div>
+                            <div class="project-info">
+                                <h3 class="project-title mono">Sensory Overload Watch</h3>
+                                <p class="project-desc newsreader">Developing a custom PCB for a wearable designed for individuals with sensory processing disorder &mdash; hardware that adapts to its wearer.</p>
+                                <div class="project-tags">
+                                    <span class="tag mono">[CUSTOM PCB]</span>
+                                    <span class="tag mono">[WEARABLE]</span>
+                                    <span class="tag mono">[EMBEDDED]</span>
+                                </div>
+                                <span class="project-cta mono">&gt;_ VIEW PROJECT</span>
+                            </div>
+                        </div>
                     </div>
-                -->
+
+                    <div class="project-entry reveal" onclick="openProject('project_oddity')" tabindex="0" role="button" aria-label="Oddity 1 Chrome Extension">
+                        <div class="project-index mono">08.</div>
+                        <div class="project-box">
+                            <div class="project-image-wrap">
+                                <div class="project-placeholder">
+                                    <span>&#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;</span>
+                                    <span>PHOTOS</span>
+                                    <span>COMING</span>
+                                    <span>&#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;</span>
+                                </div>
+                            </div>
+                            <div class="project-info">
+                                <h3 class="project-title mono">Oddity 1 &mdash; Chrome Extension</h3>
+                                <p class="project-desc newsreader">On-screen GDocs annotation system &mdash; previously impossible without a Google Whitelist. Uses chenglou/pretext, the GDocs API, and HEX color tracking to solve &lt;canvas&gt; rendering. Includes a &ldquo;Cursor for Writing&rdquo; system built on a clean-room Claude Code rewrite.</p>
+                                <div class="project-tags">
+                                    <span class="tag mono">[CHROME EXT]</span>
+                                    <span class="tag mono">[GDOCS API]</span>
+                                    <span class="tag mono">[JAVASCRIPT]</span>
+                                </div>
+                                <span class="project-cta mono">&gt;_ VIEW PROJECT</span>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
 
-        <!-- Skills Section -->
+        <!-- ── SKILLS ── -->
         <section id="skills" class="section skills-section">
             <div class="container">
-                <h2 class="section-title">Skills</h2>
-                <div class="skills-content">
-                    <div class="skills-category">
-                        <h3>Programming Languages</h3>
-                        <div class="skill-items">
-                            <div class="skill-item">
-                                <span>Python</span>
-                                <div class="skill-bar">
-                                    <div class="skill-progress" style="width: 90%"></div>
-                                </div>
-                            </div>
-                            <div class="skill-item">
-                                <span>Java</span>
-                                <div class="skill-bar">
-                                    <div class="skill-progress" style="width: 85%"></div>
-                                </div>
-                            </div>
-                            <div class="skill-item">
-                                <span>Swift</span>
-                                <div class="skill-bar">
-                                    <div class="skill-progress" style="width: 80%"></div>
-                                </div>
-                            </div>
-                            <div class="skill-item">
-                                <span>C++</span>
-                                <div class="skill-bar">
-                                    <div class="skill-progress" style="width: 75%"></div>
-                                </div>
-                            </div>
+                <div class="section-header reveal">
+                    <span class="section-number mono">04.</span>
+                    <div class="section-line"></div>
+                    <span class="section-label mono">SKILLS</span>
+                </div>
+                <div class="skills-grid">
+                    <div class="skill-group reveal">
+                        <div class="skill-group-label mono">// LANGUAGES</div>
+                        <div class="skill-row">
+                            <span class="skill-name mono">Python</span>
+                            <span class="skill-bar mono" data-pct="90"></span>
+                            <span class="skill-pct mono">90%</span>
+                        </div>
+                        <div class="skill-row">
+                            <span class="skill-name mono">Java</span>
+                            <span class="skill-bar mono" data-pct="85"></span>
+                            <span class="skill-pct mono">85%</span>
+                        </div>
+                        <div class="skill-row">
+                            <span class="skill-name mono">Swift</span>
+                            <span class="skill-bar mono" data-pct="80"></span>
+                            <span class="skill-pct mono">80%</span>
+                        </div>
+                        <div class="skill-row">
+                            <span class="skill-name mono">C++</span>
+                            <span class="skill-bar mono" data-pct="75"></span>
+                            <span class="skill-pct mono">75%</span>
                         </div>
                     </div>
-                    <div class="skills-category">
-                        <h3>Technologies</h3>
-                        <div class="skill-items">
-                            <div class="skill-item">
-                                <span>Arduino</span>
-                                <div class="skill-bar">
-                                    <div class="skill-progress" style="width: 88%"></div>
-                                </div>
-                            </div>
-                            <div class="skill-item">
-                                <span>Verilog/FPGA</span>
-                                <div class="skill-bar">
-                                    <div class="skill-progress" style="width: 82%"></div>
-                                </div>
-                            </div>
-                        
-                            <div class="skill-item">
-                                <span>Fusion 360</span>
-                                <div class="skill-bar">
-                                    <div class="skill-progress" style="width: 70%"></div>
-                                </div>
-                            <!--
-                            </div>
-                            <div class="skill-item">
-                                <span>AWS</span>
-                                <div class="skill-bar">
-                                    <div class="skill-progress" style="width: 65%"></div>
-                                </div>
-                            </div>
-                            -->
+                    <div class="skill-group reveal">
+                        <div class="skill-group-label mono">// TECHNOLOGIES</div>
+                        <div class="skill-row">
+                            <span class="skill-name mono">Arduino</span>
+                            <span class="skill-bar mono" data-pct="88"></span>
+                            <span class="skill-pct mono">88%</span>
+                        </div>
+                        <div class="skill-row">
+                            <span class="skill-name mono">Verilog / FPGA</span>
+                            <span class="skill-bar mono" data-pct="82"></span>
+                            <span class="skill-pct mono">82%</span>
+                        </div>
+                        <div class="skill-row">
+                            <span class="skill-name mono">Fusion 360</span>
+                            <span class="skill-bar mono" data-pct="70"></span>
+                            <span class="skill-pct mono">70%</span>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Contact Section -->
+        <!-- ── CONTACT ── -->
         <section id="contact" class="section contact-section">
             <div class="container">
-                <h2 class="section-title">Contact</h2>
+                <div class="section-header reveal">
+                    <span class="section-number mono">05.</span>
+                    <div class="section-line"></div>
+                    <span class="section-label mono">CONTACT</span>
+                </div>
                 <div class="contact-content">
-                    <div class="contact-info">
-                        <h3>Let's Connect</h3>
-                        <p>I'm always interested in new opportunities and collaborations. Feel free to reach out!</p>
-                        <div class="contact-details">
-                            <div class="contact-item">
-                                <i class="fas fa-envelope"></i>
-                                <span>park.p.saejoon@gmail.com</span>
-                            </div>
-                            <div class="contact-item">
-                                <i class="fas fa-phone"></i>
-                                <span>+1 (571) 373-7778</span>
-                            </div>
-                            <div class="contact-item">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span>Burke, VA</span>
-                            </div>
-                        </div>
-                        <div class="social-links">
-                            
-                            <a href="https://www.linkedin.com/in/saejoon-park-1b3b1430b/" class="social-link" target="_blank"><i class="fab fa-linkedin"></i></a>
-                            <!-- 
-                            <a href="#" class="social-link"><i class="fab fa-github"></i></a>
-                            <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-                            <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
-                        -->
-                        </div>
+                    <div class="contact-left reveal">
+                        <pre class="contact-block mono" aria-label="Contact information">
+&#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;
+&#x2502;  GET IN TOUCH                        &#x2502;
+&#x251C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2524;
+&#x2502;                                     &#x2502;
+&#x2502;  &gt; EMAIL   park.p.saejoon@           &#x2502;
+&#x2502;            gmail.com                 &#x2502;
+&#x2502;                                     &#x2502;
+&#x2502;  &gt; PHONE   +1 (571) 373-7778         &#x2502;
+&#x2502;                                     &#x2502;
+&#x2502;  &gt; LOC     Burke, VA                 &#x2502;
+&#x2502;                                     &#x2502;
+&#x2502;  &gt; LI      /in/saejoon-park-         &#x2502;
+&#x2502;            1b3b1430b/               &#x2502;
+&#x2502;                                     &#x2502;
+&#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;</pre>
                     </div>
-                    <div class="resume-section">
-                        <div class="resume-card">
-                            <i class="fas fa-download"></i>
-                            <h3>Download Resume</h3>
-                            <p>Get my latest resume with detailed experience and skills</p>
-                            <button class="resume-btn" onclick="downloadResume()">Download PDF</button>
+                    <div class="contact-right reveal">
+                        <div class="resume-block">
+                            <span class="resume-label mono">// RESUME</span>
+                            <p class="resume-desc newsreader">
+                                Electrical &amp; Computer Engineering student at Cornell University.
+                                Available for internships and research positions.
+                            </p>
+                            <button class="resume-btn mono" onclick="downloadResume()">
+                                &gt;_ DOWNLOAD PDF
+                            </button>
+                        </div>
+                        <div class="linkedin-block">
+                            <a href="https://linkedin.com/in/saejoon-park-1b3b1430b/"
+                               target="_blank" rel="noopener noreferrer"
+                               class="linkedin-link mono">
+                                &gt;_ LINKEDIN &#x2197;
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+
     </main>
 
-    <!-- Footer -->
     <footer class="footer">
-        <div class="container">
-            <p>&copy; 2025 Saejoon Park. All rights reserved.</p>
+        <div class="container footer-inner">
+            <span class="mono footer-text">Saejoon Park &copy; 2025</span>
+            <span class="mono footer-sep">&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;</span>
+            <span class="mono footer-text">ECE @ Cornell University</span>
         </div>
     </footer>
 
