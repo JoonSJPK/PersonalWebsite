@@ -4,6 +4,17 @@
    PROJECT DATA
 ────────────────────────────────────────────── */
 const projectDetails = {
+    project_glove: {
+        title: 'Glove Mouse',
+        description: 'ATMega32U4 with custom conductive inputs and IMU — a position-tracking glove device (Valorant compatible). Computer Vision via OpenCV enables hand gesture tracking for simulated clicks and volume control at 30 fps.',
+        technologies: ['ATMega32U4', 'OpenCV', 'IMU', 'Computer Vision', 'Python'],
+        features: ['> ATMega32U4 microcontroller', '> Custom conductive finger inputs', '> IMU position tracking', '> OpenCV hand gesture recognition at 30 fps', '> Valorant compatible'],
+        images: [
+            'websiteImages/glove_mouse/glove_mouse1.png',
+            'websiteImages/glove_mouse/glove_mouse2.png',
+            'websiteImages/glove_mouse/glove_mouse3.png'
+        ]
+    },
     project1: {
         title: 'Political AI Camera',
         description: 'Raspberry Pi-based hardware featuring a 12.1 MP sensor and Picamera2 library. Calls the OpenAI API with the gpt-image-1 model, prompted to output different political perspectives on a captured image.',
@@ -42,7 +53,7 @@ const projectDetails = {
         title: 'Steel Electric Bike',
         description: 'Custom-cut and assembled steel chassis with a 1000W motor and 50V accumulator — every tube cut, welded, and fitted by hand from raw stock.',
         technologies: ['Steel Fabrication', 'Motor Control', 'Electronics', 'Mechanical Design'],
-        features: ['> Custom-cut steel chassis', '> 1000W motor + 50V accumulator', '> Custom rear axle hub', '> Hand-welded frame assembly'],
+        features: ['> Custom-cut steel chassis', '> 1000W motor + 50V accumulator', '> Custom rear axle hub', '> Custom cut, screwed, and fitted by hand'],
         images: [
             'websiteImages/eBike/IMG_2883.png',
             'websiteImages/eBike/IMG_2891.png',
@@ -88,21 +99,29 @@ const projectDetails = {
         description: 'Designed and built a 6th-order MFB bandpass filter to extract encoded audio secrets. Conducted automated frequency response sweeps and safely eliminated multi-volt DC offsets.',
         technologies: ['Analog Design', '6th-Order MFB Filter', 'Signal Processing', 'Lab Instrumentation'],
         features: ['> 6th-order MFB bandpass filter', '> Automated frequency response sweeps', '> Multi-volt DC offset elimination', '> Encoded audio signal extraction'],
-        images: []
+        images: [
+            'websiteImages/audio_decoding/IMG_4330.png'
+        ]
     },
     project_watch: {
-        title: 'Sensory Overload Watch',
-        description: 'Developing a custom PCB for a wearable designed to help individuals with sensory processing disorder — hardware that adapts to its wearer.',
+        title: 'Sensory Overload Wearable',
+        description: 'Developing a custom PCB for a lap wearable accommodating individuals with sensory processing disorder — hardware that adapts to its wearer.',
         technologies: ['Custom PCB', 'Wearable Electronics', 'Embedded Systems', 'KiCad'],
-        features: ['> Custom PCB design', '> Sensory processing disorder focus', '> Wearable form factor', '> In active development'],
-        images: []
+        features: ['> Custom PCB design', '> Lap wearable form factor', '> Sensory processing disorder focus', '> In active development'],
+        images: [
+            'websiteImages/sensory_overload/sensory_overload_1.png',
+            'websiteImages/sensory_overload/sensory_overload_2.png'
+        ]
     },
     project_oddity: {
         title: 'Oddity 1 — Chrome Extension',
         description: 'On-screen GDocs annotation system previously impossible without a Google Whitelist. Uses chenglou/pretext, the GDocs API, and HEX color tracking to solve <canvas> rendering. Includes a "Cursor for Writing" system built on a clean-room Claude Code rewrite.',
         technologies: ['Chrome Extension', 'GDocs API', 'JavaScript', 'HEX Color Tracking'],
         features: ['> GDocs canvas annotation without whitelist', '> chenglou/pretext JS library integration', '> HEX color tracking system', '> Clean-room "Cursor for Writing" system'],
-        images: []
+        images: [
+            'websiteImages/oddity1/oddity1_1.png',
+            'websiteImages/oddity1/oddity1_2.png'
+        ]
     }
 };
 
@@ -440,6 +459,14 @@ function openProject(projectId) {
 
     requestAnimationFrame(() => requestAnimationFrame(() => modal.classList.add('open')));
 
+    // Wire gallery image clicks → lightbox
+    if (project.images.length) {
+        modal.querySelectorAll('.terminal-gallery img').forEach((img, idx) => {
+            img.style.cursor = 'none';
+            img.addEventListener('click', () => openLightbox(project.images, idx));
+        });
+    }
+
     function close() {
         modal.classList.remove('open');
         setTimeout(() => modal.remove(), 320);
@@ -452,6 +479,84 @@ function openProject(projectId) {
 
     modal.querySelector('.terminal-close').addEventListener('click', close);
     modal.addEventListener('click', e => { if (e.target === modal) close(); });
+    document.addEventListener('keydown', onKey);
+}
+
+/* ──────────────────────────────────────────────
+   LIGHTBOX
+────────────────────────────────────────────── */
+function openLightbox(images, startIndex) {
+    let current = startIndex;
+
+    const lb = document.createElement('div');
+    lb.className = 'lightbox';
+    lb.setAttribute('role', 'dialog');
+    lb.setAttribute('aria-modal', 'true');
+    lb.setAttribute('aria-label', 'Image viewer');
+
+    lb.innerHTML = `
+        <div class="lb-inner">
+            <img class="lb-img" src="${images[current]}" alt="Image ${current + 1} of ${images.length}">
+        </div>
+        <button class="lb-btn lb-prev mono" aria-label="Previous image">[&lt;]</button>
+        <button class="lb-btn lb-next mono" aria-label="Next image">[&gt;]</button>
+        <div class="lb-bar">
+            <span class="lb-counter mono"></span>
+            <button class="lb-close mono" aria-label="Close viewer">[X]</button>
+        </div>`;
+
+    document.body.appendChild(lb);
+    document.body.classList.add('lightbox-open');
+    requestAnimationFrame(() => requestAnimationFrame(() => lb.classList.add('open')));
+
+    const img     = lb.querySelector('.lb-img');
+    const counter = lb.querySelector('.lb-counter');
+    const prevBtn = lb.querySelector('.lb-prev');
+    const nextBtn = lb.querySelector('.lb-next');
+
+    // Wire lightbox interactive elements to cursor hover state
+    const dot = document.getElementById('cursor-follower');
+    lb.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('mouseenter', () => dot?.classList.add('hovering'));
+        btn.addEventListener('mouseleave', () => dot?.classList.remove('hovering'));
+    });
+
+    function update() {
+        img.classList.add('lb-img--fade');
+        setTimeout(() => {
+            img.src = images[current];
+            img.alt = `Image ${current + 1} of ${images.length}`;
+            img.classList.remove('lb-img--fade');
+        }, 120);
+        counter.textContent = `${String(current + 1).padStart(2, '0')} / ${String(images.length).padStart(2, '0')}`;
+        prevBtn.style.opacity = current === 0 ? '0.25' : '1';
+        nextBtn.style.opacity = current === images.length - 1 ? '0.25' : '1';
+    }
+
+    update();
+
+    function prev() { if (current > 0) { current--; update(); } }
+    function next() { if (current < images.length - 1) { current++; update(); } }
+
+    function close() {
+        lb.classList.remove('open');
+        document.body.classList.remove('lightbox-open');
+        dot?.classList.remove('hovering');
+        setTimeout(() => lb.remove(), 220);
+        document.removeEventListener('keydown', onKey);
+    }
+
+    function onKey(e) {
+        if (e.key === 'ArrowLeft')  prev();
+        if (e.key === 'ArrowRight') next();
+        if (e.key === 'Escape')     close();
+    }
+
+    prevBtn.addEventListener('click', prev);
+    nextBtn.addEventListener('click', next);
+    lb.querySelector('.lb-close').addEventListener('click', close);
+    // Click backdrop (not the image inner) to close
+    lb.addEventListener('click', e => { if (e.target === lb) close(); });
     document.addEventListener('keydown', onKey);
 }
 

@@ -21,7 +21,6 @@
                 <li><a href="#about"    class="nav-link mono">[ABOUT]</a></li>
                 <li><a href="#videos"   class="nav-link mono">[VIDEOS]</a></li>
                 <li><a href="#projects" class="nav-link mono">[PROJECTS]</a></li>
-                <li><a href="#skills"   class="nav-link mono">[SKILLS]</a></li>
                 <li><a href="#contact"  class="nav-link mono">[CONTACT]</a></li>
             </ul>
             <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false">
@@ -75,14 +74,37 @@
                         </p>
                         <div class="about-stack">
                             <span class="stack-label mono">// CURRENTLY</span>
-                            <p class="stack-text newsreader">Cornell University &middot; ECE &middot; Class of 2027</p>
+                            <p class="stack-text newsreader">Cornell University &middot; ECE &middot; Class of 2028</p>
                         </div>
-                        <div class="about-tags">
-                            <span class="tag mono">[PYTHON]</span>
-                            <span class="tag mono">[C++]</span>
-                            <span class="tag mono">[SWIFT]</span>
-                            <span class="tag mono">[ARDUINO]</span>
-                            <span class="tag mono">[FUSION360]</span>
+                        <div class="about-stack">
+                            <span class="stack-label mono">// PROGRAMMING LANGUAGES</span>
+                            <div class="about-tags">
+                                <span class="tag mono">[PYTHON]</span>
+                                <span class="tag mono">[C]</span>
+                                <span class="tag mono">[C++]</span>
+                                <span class="tag mono">[SWIFT]</span>
+                                <span class="tag mono">[JAVA]</span>
+                                <span class="tag mono">[VERILOG]</span>
+                            </div>
+                        </div>
+                        <div class="about-stack">
+                            <span class="stack-label mono">// SOFTWARE &amp; PLATFORMS</span>
+                            <div class="about-tags">
+                                <span class="tag mono">[GITHUB]</span>
+                                <span class="tag mono">[KICAD]</span>
+                                <span class="tag mono">[QUARTUS]</span>
+                                <span class="tag mono">[LTSPICE]</span>
+                                <span class="tag mono">[FUSION360]</span>
+                                <span class="tag mono">[CLAUDE CODE]</span>
+                                <span class="tag mono">[FIGMA MCP]</span>
+                            </div>
+                        </div>
+                        <div class="about-stack">
+                            <span class="stack-label mono">// LANGUAGES</span>
+                            <div class="about-tags">
+                                <span class="tag mono">[ENGLISH &mdash; FLUENT]</span>
+                                <span class="tag mono">[KOREAN &mdash; CONVERSATIONAL]</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -148,8 +170,104 @@
                 </div>
                 <div class="projects-list">
 
-                    <div class="project-entry reveal" onclick="openProject('project1')" tabindex="0" role="button" aria-label="Political AI Camera">
+                    <div class="project-entry reveal" onclick="openProject('project_glove')" tabindex="0" role="button" aria-label="Glove Mouse">
                         <div class="project-index mono">01.</div>
+                        <div class="project-box">
+                            <div class="project-image-wrap">
+                                <img src="websiteImages/glove_mouse/glove_mouse1.png" alt="Glove Mouse" loading="lazy">
+                            </div>
+                            <div class="project-info">
+                                <h3 class="project-title mono">Glove Mouse</h3>
+                                <p class="project-desc newsreader">ATMega32U4 with custom conductive inputs and IMU &mdash; a position-tracking glove device (Valorant compatible). Computer Vision via OpenCV enables hand gesture tracking for simulated clicks and volume control at 30 fps.</p>
+                                <div class="project-tags">
+                                    <span class="tag mono">[ATMEGA32U4]</span>
+                                    <span class="tag mono">[OPENCV]</span>
+                                    <span class="tag mono">[IMU]</span>
+                                    <span class="tag mono">[COMPUTER VISION]</span>
+                                </div>
+                                <span class="project-cta mono">&gt;_ VIEW PROJECT</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-entry reveal" onclick="openProject('project6')" tabindex="0" role="button" aria-label="TEG Mouse">
+                        <div class="project-index mono">02.</div>
+                        <div class="project-box">
+                            <div class="project-image-wrap">
+                                <img src="websiteImages/TEGMouse/1000029237.JPG" alt="TEG Mouse" loading="lazy">
+                            </div>
+                            <div class="project-info">
+                                <h3 class="project-title mono">TEG Mouse</h3>
+                                <p class="project-desc newsreader">Patent Pending. Hand thermal energy powers this mouse via TEG modules and a transformer that steps a 20mV output up to 3.3V &mdash; no battery required.</p>
+                                <div class="project-tags">
+                                    <span class="tag mono">[THERMOELECTRIC]</span>
+                                    <span class="tag mono">[TRANSFORMER]</span>
+                                    <span class="tag mono">[PATENT PENDING]</span>
+                                </div>
+                                <span class="project-cta mono">&gt;_ VIEW PROJECT</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-entry reveal" onclick="openProject('project3')" tabindex="0" role="button" aria-label="Steel Electric Bike">
+                        <div class="project-index mono">03.</div>
+                        <div class="project-box">
+                            <div class="project-image-wrap">
+                                <img src="websiteImages/eBike/IMG_2883.png" alt="Steel Electric Bike" loading="lazy">
+                            </div>
+                            <div class="project-info">
+                                <h3 class="project-title mono">Steel Electric Bike</h3>
+                                <p class="project-desc newsreader">Custom-cut and assembled steel chassis with a 1000W motor and 50V accumulator &mdash; custom cut, screwed, and fitted by hand.</p>
+                                <div class="project-tags">
+                                    <span class="tag mono">[STEEL FABRICATION]</span>
+                                    <span class="tag mono">[MOTOR CTRL]</span>
+                                    <span class="tag mono">[ELECTRONICS]</span>
+                                </div>
+                                <span class="project-cta mono">&gt;_ VIEW PROJECT</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-entry reveal" onclick="openProject('project_audio')" tabindex="0" role="button" aria-label="Audio Signal Decoding Circuit">
+                        <div class="project-index mono">04.</div>
+                        <div class="project-box">
+                            <div class="project-image-wrap">
+                                <img src="websiteImages/audio_decoding/IMG_4330.png" alt="Audio Signal Decoding Circuit" loading="lazy">
+                            </div>
+                            <div class="project-info">
+                                <h3 class="project-title mono">Audio Signal Decoding Circuit</h3>
+                                <p class="project-desc newsreader">Designed and built a 6th-order MFB bandpass filter to extract encoded audio secrets. Automated frequency response sweeps and safely eliminated multi-volt DC offsets.</p>
+                                <div class="project-tags">
+                                    <span class="tag mono">[ANALOG DESIGN]</span>
+                                    <span class="tag mono">[MFB FILTER]</span>
+                                    <span class="tag mono">[SIGNAL PROC]</span>
+                                </div>
+                                <span class="project-cta mono">&gt;_ VIEW PROJECT</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-entry reveal" onclick="openProject('project_watch')" tabindex="0" role="button" aria-label="Sensory Overload Wearable">
+                        <div class="project-index mono">05.</div>
+                        <div class="project-box">
+                            <div class="project-image-wrap">
+                                <img src="websiteImages/sensory_overload/sensory_overload_1.png" alt="Sensory Overload Wearable" loading="lazy">
+                            </div>
+                            <div class="project-info">
+                                <h3 class="project-title mono">Sensory Overload Wearable</h3>
+                                <p class="project-desc newsreader">Developing a custom PCB for a lap wearable accommodating individuals with sensory processing disorder &mdash; hardware that adapts to its wearer.</p>
+                                <div class="project-tags">
+                                    <span class="tag mono">[CUSTOM PCB]</span>
+                                    <span class="tag mono">[WEARABLE]</span>
+                                    <span class="tag mono">[EMBEDDED]</span>
+                                </div>
+                                <span class="project-cta mono">&gt;_ VIEW PROJECT</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-entry reveal" onclick="openProject('project1')" tabindex="0" role="button" aria-label="Political AI Camera">
+                        <div class="project-index mono">06.</div>
                         <div class="project-box">
                             <div class="project-image-wrap">
                                 <img src="websiteImages/camera/7AA4DC16-AB79-402F-891A-7157628E1E73.JPG" alt="Political AI Camera" loading="lazy">
@@ -168,38 +286,19 @@
                         </div>
                     </div>
 
-                    <div class="project-entry reveal" onclick="openProject('project2')" tabindex="0" role="button" aria-label="Custom Computer Case">
-                        <div class="project-index mono">02.</div>
+                    <div class="project-entry reveal" onclick="openProject('project_oddity')" tabindex="0" role="button" aria-label="Oddity 1 Chrome Extension">
+                        <div class="project-index mono">07.</div>
                         <div class="project-box">
                             <div class="project-image-wrap">
-                                <img src="websiteImages/ComputerCase/1000028452.JPG" alt="Custom Computer Case" loading="lazy">
+                                <img src="websiteImages/oddity1/oddity1_1.png" alt="Oddity 1 Chrome Extension" loading="lazy">
                             </div>
                             <div class="project-info">
-                                <h3 class="project-title mono">Custom Computer Case</h3>
-                                <p class="project-desc newsreader">Handcrafted case with a modular chassis, fully custom cable routing, and engineered airflow channels &mdash; built to exact performance and aesthetic specifications.</p>
+                                <h3 class="project-title mono">Oddity 1 &mdash; Chrome Extension</h3>
+                                <p class="project-desc newsreader">On-screen GDocs annotation system &mdash; previously impossible without a Google Whitelist. Uses chenglou/pretext, the GDocs API, and HEX color tracking to solve &lt;canvas&gt; rendering. Includes a &ldquo;Cursor for Writing&rdquo; system built on a clean-room Claude Code rewrite.</p>
                                 <div class="project-tags">
-                                    <span class="tag mono">[CAD]</span>
-                                    <span class="tag mono">[3D PRINT]</span>
-                                    <span class="tag mono">[THERMAL]</span>
-                                </div>
-                                <span class="project-cta mono">&gt;_ VIEW PROJECT</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="project-entry reveal" onclick="openProject('project3')" tabindex="0" role="button" aria-label="Steel Electric Bike">
-                        <div class="project-index mono">03.</div>
-                        <div class="project-box">
-                            <div class="project-image-wrap">
-                                <img src="websiteImages/eBike/IMG_2883.png" alt="Steel Electric Bike" loading="lazy">
-                            </div>
-                            <div class="project-info">
-                                <h3 class="project-title mono">Steel Electric Bike</h3>
-                                <p class="project-desc newsreader">Custom-cut and assembled steel chassis with a 1000W motor and 50V accumulator &mdash; every tube cut, welded, and fitted by hand.</p>
-                                <div class="project-tags">
-                                    <span class="tag mono">[STEEL FABRICATION]</span>
-                                    <span class="tag mono">[MOTOR CTRL]</span>
-                                    <span class="tag mono">[ELECTRONICS]</span>
+                                    <span class="tag mono">[CHROME EXT]</span>
+                                    <span class="tag mono">[GDOCS API]</span>
+                                    <span class="tag mono">[JAVASCRIPT]</span>
                                 </div>
                                 <span class="project-cta mono">&gt;_ VIEW PROJECT</span>
                             </div>
@@ -207,7 +306,7 @@
                     </div>
 
                     <div class="project-entry reveal" onclick="openProject('project5')" tabindex="0" role="button" aria-label="Pull-Up Social App">
-                        <div class="project-index mono">04.</div>
+                        <div class="project-index mono">08.</div>
                         <div class="project-box">
                             <div class="project-image-wrap project-image-portrait">
                                 <img src="websiteImages/PullUPApp/IMG_3357.PNG" alt="Pull-Up Social App" loading="lazy">
@@ -225,160 +324,17 @@
                         </div>
                     </div>
 
-                    <div class="project-entry reveal" onclick="openProject('project6')" tabindex="0" role="button" aria-label="TEG Mouse">
-                        <div class="project-index mono">05.</div>
-                        <div class="project-box">
-                            <div class="project-image-wrap">
-                                <img src="websiteImages/TEGMouse/1000029237.JPG" alt="TEG Mouse" loading="lazy">
-                            </div>
-                            <div class="project-info">
-                                <h3 class="project-title mono">TEG Mouse</h3>
-                                <p class="project-desc newsreader">Patent Pending. Hand thermal energy powers this mouse via TEG modules and a transformer that steps a 20mV output up to 3.3V &mdash; no battery required.</p>
-                                <div class="project-tags">
-                                    <span class="tag mono">[THERMOELECTRIC]</span>
-                                    <span class="tag mono">[TRANSFORMER]</span>
-                                    <span class="tag mono">[PATENT PENDING]</span>
-                                </div>
-                                <span class="project-cta mono">&gt;_ VIEW PROJECT</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="project-entry reveal" onclick="openProject('project_audio')" tabindex="0" role="button" aria-label="Audio Signal Decoding Circuit">
-                        <div class="project-index mono">06.</div>
-                        <div class="project-box">
-                            <div class="project-image-wrap">
-                                <div class="project-placeholder">
-                                    <span>&#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;</span>
-                                    <span>PHOTOS</span>
-                                    <span>COMING</span>
-                                    <span>&#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;</span>
-                                </div>
-                            </div>
-                            <div class="project-info">
-                                <h3 class="project-title mono">Audio Signal Decoding Circuit</h3>
-                                <p class="project-desc newsreader">Designed and built a 6th-order MFB bandpass filter to extract encoded audio secrets. Automated frequency response sweeps and safely eliminated multi-volt DC offsets.</p>
-                                <div class="project-tags">
-                                    <span class="tag mono">[ANALOG DESIGN]</span>
-                                    <span class="tag mono">[MFB FILTER]</span>
-                                    <span class="tag mono">[SIGNAL PROC]</span>
-                                </div>
-                                <span class="project-cta mono">&gt;_ VIEW PROJECT</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="project-entry reveal" onclick="openProject('project_watch')" tabindex="0" role="button" aria-label="Sensory Overload Watch">
-                        <div class="project-index mono">07.</div>
-                        <div class="project-box">
-                            <div class="project-image-wrap">
-                                <div class="project-placeholder">
-                                    <span>&#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;</span>
-                                    <span>PHOTOS</span>
-                                    <span>COMING</span>
-                                    <span>&#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;</span>
-                                </div>
-                            </div>
-                            <div class="project-info">
-                                <h3 class="project-title mono">Sensory Overload Watch</h3>
-                                <p class="project-desc newsreader">Developing a custom PCB for a wearable designed for individuals with sensory processing disorder &mdash; hardware that adapts to its wearer.</p>
-                                <div class="project-tags">
-                                    <span class="tag mono">[CUSTOM PCB]</span>
-                                    <span class="tag mono">[WEARABLE]</span>
-                                    <span class="tag mono">[EMBEDDED]</span>
-                                </div>
-                                <span class="project-cta mono">&gt;_ VIEW PROJECT</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="project-entry reveal" onclick="openProject('project_oddity')" tabindex="0" role="button" aria-label="Oddity 1 Chrome Extension">
-                        <div class="project-index mono">08.</div>
-                        <div class="project-box">
-                            <div class="project-image-wrap">
-                                <div class="project-placeholder">
-                                    <span>&#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;</span>
-                                    <span>PHOTOS</span>
-                                    <span>COMING</span>
-                                    <span>&#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;</span>
-                                </div>
-                            </div>
-                            <div class="project-info">
-                                <h3 class="project-title mono">Oddity 1 &mdash; Chrome Extension</h3>
-                                <p class="project-desc newsreader">On-screen GDocs annotation system &mdash; previously impossible without a Google Whitelist. Uses chenglou/pretext, the GDocs API, and HEX color tracking to solve &lt;canvas&gt; rendering. Includes a &ldquo;Cursor for Writing&rdquo; system built on a clean-room Claude Code rewrite.</p>
-                                <div class="project-tags">
-                                    <span class="tag mono">[CHROME EXT]</span>
-                                    <span class="tag mono">[GDOCS API]</span>
-                                    <span class="tag mono">[JAVASCRIPT]</span>
-                                </div>
-                                <span class="project-cta mono">&gt;_ VIEW PROJECT</span>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
             </div>
         </section>
 
-        <!-- ── SKILLS ── -->
-        <section id="skills" class="section skills-section">
-            <div class="container">
-                <div class="section-header reveal">
-                    <span class="section-number mono">04.</span>
-                    <div class="section-line"></div>
-                    <span class="section-label mono">SKILLS</span>
-                </div>
-                <div class="skills-grid">
-                    <div class="skill-group reveal">
-                        <div class="skill-group-label mono">// LANGUAGES</div>
-                        <div class="skill-row">
-                            <span class="skill-name mono">Python</span>
-                            <span class="skill-bar mono" data-pct="90"></span>
-                            <span class="skill-pct mono">90%</span>
-                        </div>
-                        <div class="skill-row">
-                            <span class="skill-name mono">Java</span>
-                            <span class="skill-bar mono" data-pct="85"></span>
-                            <span class="skill-pct mono">85%</span>
-                        </div>
-                        <div class="skill-row">
-                            <span class="skill-name mono">Swift</span>
-                            <span class="skill-bar mono" data-pct="80"></span>
-                            <span class="skill-pct mono">80%</span>
-                        </div>
-                        <div class="skill-row">
-                            <span class="skill-name mono">C++</span>
-                            <span class="skill-bar mono" data-pct="75"></span>
-                            <span class="skill-pct mono">75%</span>
-                        </div>
-                    </div>
-                    <div class="skill-group reveal">
-                        <div class="skill-group-label mono">// TECHNOLOGIES</div>
-                        <div class="skill-row">
-                            <span class="skill-name mono">Arduino</span>
-                            <span class="skill-bar mono" data-pct="88"></span>
-                            <span class="skill-pct mono">88%</span>
-                        </div>
-                        <div class="skill-row">
-                            <span class="skill-name mono">Verilog / FPGA</span>
-                            <span class="skill-bar mono" data-pct="82"></span>
-                            <span class="skill-pct mono">82%</span>
-                        </div>
-                        <div class="skill-row">
-                            <span class="skill-name mono">Fusion 360</span>
-                            <span class="skill-bar mono" data-pct="70"></span>
-                            <span class="skill-pct mono">70%</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+
 
         <!-- ── CONTACT ── -->
         <section id="contact" class="section contact-section">
             <div class="container">
                 <div class="section-header reveal">
-                    <span class="section-number mono">05.</span>
+                    <span class="section-number mono">04.</span>
                     <div class="section-line"></div>
                     <span class="section-label mono">CONTACT</span>
                 </div>

@@ -1117,6 +1117,119 @@ ul { list-style: none; }
     }
 }
 
+/* ── LIGHTBOX ── */
+.lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 9, 7, 0.93);
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.22s;
+}
+
+.lightbox.open {
+    opacity: 1;
+}
+
+.lb-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 90vw;
+    max-height: 85vh;
+    pointer-events: none;
+}
+
+.lb-img {
+    max-width: 90vw;
+    max-height: 85vh;
+    object-fit: contain;
+    display: block;
+    pointer-events: auto;
+    transition: opacity 0.12s;
+    user-select: none;
+}
+
+.lb-img--fade {
+    opacity: 0;
+}
+
+.lb-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    color: rgba(248, 247, 245, 0.7);
+    background: none;
+    border: 1px solid rgba(248, 247, 245, 0.2);
+    padding: 0.6rem 0.9rem;
+    cursor: none;
+    transition: color 0.18s, border-color 0.18s, opacity 0.18s;
+}
+
+.lb-btn:hover {
+    color: var(--bg);
+    border-color: rgba(248, 247, 245, 0.6);
+}
+
+.lb-prev { left: 1.5rem; }
+.lb-next { right: 1.5rem; }
+
+.lb-bar {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.lb-counter {
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    color: rgba(248, 247, 245, 0.5);
+}
+
+.lb-close {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    color: rgba(248, 247, 245, 0.5);
+    background: none;
+    border: 1px solid rgba(248, 247, 245, 0.15);
+    padding: 2px 7px;
+    cursor: none;
+    transition: color 0.18s, border-color 0.18s;
+}
+
+.lb-close:hover {
+    color: var(--bg);
+    border-color: rgba(248, 247, 245, 0.5);
+}
+
+/* Cursor inversion inside lightbox */
+body.lightbox-open #cursor-follower {
+    background: var(--bg);
+}
+body.lightbox-open #cursor-follower::after {
+    border-color: var(--bg);
+}
+
+/* Make gallery images show pointer intent */
+.terminal-gallery img {
+    cursor: none;
+    transition: filter 0.3s, transform 0.2s;
+}
+
+.terminal-gallery img:hover {
+    transform: scale(1.02);
+}
+
 /* ── Accessibility: reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
     .reveal {
