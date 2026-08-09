@@ -438,19 +438,7 @@ ul { list-style: none; }
     gap: 0.5rem;
 }
 
-/* ── VIDEOS ── */
-.videos-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
-}
-
-.video-entry {
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-}
-
+/* ── VIDEOS (rendered inside the project modal) ── */
 .video-label {
     font-size: 0.6rem;
     letter-spacing: 0.13em;
@@ -706,6 +694,38 @@ ul { list-style: none; }
 
 .project-entry:hover .project-cta {
     color: var(--accent);
+}
+
+/* Direct links to a project's writeup pages, shown on the project card */
+.project-docs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem 0.7rem;
+    margin-top: 0.2rem;
+}
+
+.project-docs-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    width: 100%;
+}
+
+.project-doc-link {
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    padding: 0.28rem 0.55rem;
+    cursor: none;
+    transition: color 0.2s, background 0.2s;
+}
+
+.project-doc-link:hover {
+    color: var(--bg);
+    background: var(--accent);
 }
 
 /* ── SKILLS ── */
@@ -993,6 +1013,79 @@ ul { list-style: none; }
     letter-spacing: 0.03em;
 }
 
+/* Videos inside the project modal */
+.modal-videos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.1rem;
+}
+
+.modal-video {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+/* Reserve two lines so frames stay aligned when one title wraps */
+.modal-video .video-label {
+    min-height: 2.2em;
+}
+
+/* A YouTube Short is vertical — give it a portrait frame instead of 16:9.
+   hqdefault is a 16:9 still with the vertical clip pillarboxed at its centre,
+   so the inherited object-fit: cover crops the bars away and fills the frame. */
+.modal-video-short {
+    max-width: 250px;
+}
+
+.modal-video-short .video-frame-wrap {
+    aspect-ratio: 9 / 16;
+}
+
+/* Writeup links inside the project modal */
+.doc-links {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.doc-link {
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+    color: var(--accent);
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    padding: 0.62rem 0.85rem;
+    font-family: var(--mono);
+    font-size: 0.73rem;
+    letter-spacing: 0.03em;
+    cursor: none;
+    transition: color 0.2s, background 0.2s;
+}
+
+.doc-link:hover {
+    color: var(--bg);
+    background: var(--accent);
+}
+
+.doc-link-num {
+    color: var(--muted);
+    font-size: 0.61rem;
+    letter-spacing: 0.16em;
+    transition: color 0.2s;
+}
+
+.doc-link-arrow {
+    margin-left: auto;
+    color: var(--muted);
+    transition: color 0.2s;
+}
+
+.doc-link:hover .doc-link-num,
+.doc-link:hover .doc-link-arrow {
+    color: var(--bg);
+}
+
 /* ── RESPONSIVE ── */
 @media (max-width: 900px) {
     .about-content {
@@ -1002,11 +1095,6 @@ ul { list-style: none; }
 
     .about-portrait {
         display: none;
-    }
-
-    .videos-grid {
-        grid-template-columns: 1fr;
-        gap: 2.5rem;
     }
 
     .project-box {

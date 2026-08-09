@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UR5e &mdash; Task 02: Trajectory Tracking &mdash; Saejoon Park</title>
+    <meta name="description" content="Generalized trapezoidal velocity profiles tracked with PID plus command feedforward.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="docs.css">
+</head>
+<body class="doc-page">
+    <div id="cursor-follower" aria-hidden="true"></div>
+
+    <header class="header doc-header">
+        <nav class="nav">
+            <div class="nav-brand">
+                <a href="index.html#projects" class="brand-link mono">SP_</a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html#projects" class="nav-link mono">[&larr; PROJECTS]</a></li>
+                <li><a href="ur5e-task1.html" class="nav-link mono">[TASK 01]</a></li>
+                <li><a href="ur5e-task2.html" class="nav-link mono active">[TASK 02]</a></li>
+                <li><a href="ur5e-task3.html" class="nav-link mono">[TASK 03]</a></li>
+            </ul>
+        </nav>
+        <div class="doc-progress" id="docProgress" aria-hidden="true"></div>
+    </header>
+
+    <main class="doc-main">
+        <div class="doc-container">
+            <div class="doc-titleblock">
+                <span class="doc-eyebrow mono">UR5E CONTROL PROJECT &mdash; TASK 02</span>
+                <h1 class="doc-title mono">Trajectory Tracking</h1>
+                <p class="doc-blurb newsreader">Generalized trapezoidal velocity profiles tracked with PID plus command feedforward.</p>
+            </div>
+
+            <div class="doc-layout">
+                <aside class="doc-toc" aria-label="Table of contents">
+                    <span class="doc-toc-label mono">// CONTENTS</span>
+                    <ul>
+                        <li class="toc-l2"><a href="#task-2-trajectory-tracking-objectives" class="mono">Task 2 (Trajectory Tracking) Objectives</a></li>
+                        <li class="toc-l2"><a href="#mathematics" class="mono">Mathematics</a></li>
+                        <li class="toc-l2"><a href="#initial-testing" class="mono">Initial Testing</a></li>
+                        <li class="toc-l2"><a href="#feedforward" class="mono">Feedforward</a></li>
+                        <li class="toc-l2"><a href="#conclusion" class="mono">Conclusion</a></li>
+                        <li class="toc-l2"><a href="#links" class="mono">Links</a></li>
+                    </ul>
+                </aside>
+
+                <article class="doc-body">
+<h2 id="task-2-trajectory-tracking-objectives">Task 2 (Trajectory Tracking) Objectives</h2>
+<ul><li>Generate a smooth joint-space trajectory between two joint configurations.</li><li>You can use either a trapezoidal velocity profile or a quintic polynomial trajectory.</li><li>Then track that trajectory and plot the desired joint positions versus the actual joint positions.</li></ul>
+<h2 id="mathematics">Mathematics</h2>
+<p>First, the generalized velocity equations for the joint-space trajectory using a trapezoidal velocity profile were formed.</p>
+<div data-tex data-display>v(t) =
+\begin{cases}
+at, &amp; 0 \le t &lt; t_1 \\
+b, &amp; t_1 \le t &lt; t_2 \\
+-at + c, &amp; t_2 \le t &lt; t_3
+\end{cases}</div>
+<p>By integrating these equations with respect to time, you are left with the model for positon.</p>
+<div data-tex data-display>q(t) =
+\begin{cases}
+\dfrac{at^2}{2} + q(0), &amp; 0 \le t &lt; t_1 \\[6pt]
+bt + \dfrac{at_1^2}{2} + q(0) - bt_1, &amp; t_1 \le t &lt; t_2 \\[6pt]
+-\dfrac{at^2}{2} + ct + bt_2 + \dfrac{at_1^2}{2} + q(0) - bt_1 + \dfrac{at_2^2}{2} - ct_2, &amp; t_2 \le t &lt; t_3
+\end{cases}</div>
+<p>Currently there are two problems with my first attempt. Firstly, the final integrated equations are not very readable and will be hard to debug. Secondly, because I chose the acceleration constant, a, and the deceleration constant, a negated, to be equal, these equations are not generalized.</p>
+<p>I first wrote down some definitions.</p>
+<div data-tex data-display>\text{area} = \frac{1}{2}t_1 v_{peak} + (t_2-t_1)v_{peak} + \frac{1}{2}(t_3-t_2)v_{peak}</div>
+<div data-tex data-display>\text{area} = v_{peak}\left[\frac{t_1}{2} + (t_2-t_1) + \frac{t_3-t_2}{2}\right], \qquad T_f = \frac{t_1}{2} + (t_2-t_1) + \frac{t_3-t_2}{2}</div>
+<div data-tex data-display>T_f \cdot v_{peak} = \text{target} - \text{init} \quad \text{(total displacement)}</div>
+<div data-tex data-display>v_{peak} = \frac{\text{target} - \text{init}}{T_f}</div>
+<p>I then looked at my constants to solve this generalization problem. I noticed a is the acceleration constant:</p>
+<div data-tex data-display>accel = \frac{v_{peak}}{t_1} \quad \text{(rise/run of the velocity graph)}</div>
+<p>And -a is the deceleration constant:</p>
+<div data-tex data-display>decel = \frac{v_{peak}}{t_3 - t_2} \quad \text{(rise/run of the velocity graph)}</div>
+<p>This sucessesfully only uses the definitions provided and time parameters of t1-t3.</p>
+<p>Looking at my first set of equations, much simplification could be performed with the initial value conditions such as position at t1 and t2.</p>
+<div data-tex data-display>q(t_1) = q(0) + \frac{accel \cdot t_1^2}{2} \quad \text{(inital position is a variable)}</div>
+<div data-tex data-display>q(t_2) = q(t_1) + v_{peak}(t_2 - t_1)</div>
+<pre><code>q(t) = self.init + accel * t ** 2 / 2, 0 &lt;= t &lt; t1
+q(t) = pos_at_t1 + self.v_peak * (t - self.t1), t1 &lt;= t &lt; t2
+q(t) = pos_at_t2 + self.v_peak * dt - decel * dt ** 2 / 2 #dt = t - self.t2</code></pre>
+<h2 id="initial-testing">Initial Testing</h2>
+<p>The inital and target positions were the following in radians:</p>
+<pre><code>init  = [-1.5708, -1.5708, -1.5708, -1.5708, -1.5708, -1.5708]
+target = [1.5708, -3.1416, 1.5708, -3.1416, 1.5708, -3.1416]</code></pre>
+<p>With t1 - t3 as the following values in seconds</p>
+<pre><code>self.t1 = 2
+self.t2 = 6
+self.t3 = 8</code></pre>
+<p>Putting in the PID gains I found from Task 1, I graphed inital velocity trajectory graphs of each joint. The graph shows average error, max error, and with the help of AI, I normalized the average error against each joint's peak target velocity to make an alignment percentage equation.</p>
+<div data-tex data-display>\text{alignment} = \max\!\left(0,\ 1 - \frac{\overline{err}}{v_{range}}\right) \times 100</div>
+<p>I didn't just want express'did it match or not the target velocity', I wanted the score to scale proportionally with how large the error was. Although this linear scaling is floored at 0% if the average error meets or exceeds the joint's own peak velocity range.".</p>
+<p>Adding a position vs time graph was also a helpful visualization of how the robot is moving.</p>
+<figure class="figure"><img src="websiteImages/ur5e/task2.2_images/no_feedforward.png" alt="no feedforward" loading="lazy"></figure>
+<p>The first test showed relatively poor alignment to the velocity graph with a overall alignment of 98.4%.</p>
+<h2 id="feedforward">Feedforward</h2>
+<p>Pure feedback control is reactive: only produces torque once a tracking error already exists. When tracking a moving setpoint like the trapezoidal velocity profile, this means the loop has to build up a position error just to keep producing the torque needed to track a non-zero target velocity, which is the lag/error seen in Initial Testing.</p>
+<p>The fix is setpoint/command feedforward architecture: since the target velocity is known analytically ahead of time (from <code>compute_tgt_vel</code>), it can be fed directly into the control signal in parallel with feedback, instead of relying on tracking error to reveal it after the fact. Feedback (<code>Kp</code>, <code>Ki</code>, and <code>- Kd*(curr_qvel)</code>) then only needs to correct for residual error and model mismatch, while feedforward (<code>Kv * target_qvel</code>) supplies the bulk of the torque the trajectory already tells us is needed.</p>
+<div data-tex data-display>u(t) = K_p e(t) + K_i \int_{0}^{t} e(\tau) d\tau + K_d \frac{de(t)}{dt} + K_v \dot{q}_{target}(t)</div>
+<ul><li><a href="https://apmonitor.com/pdc/index.php/Main/FeedforwardControl" target="_blank" rel="noopener noreferrer">https://apmonitor.com/pdc/index.php/Main/FeedforwardControl</a></li><li><a href="https://web.stanford.edu/class/archive/ee/ee392m/ee392m.1034/Lecture5_Feedfrwrd.pdf" target="_blank" rel="noopener noreferrer">https://web.stanford.edu/class/archive/ee/ee392m/ee392m.1034/Lecture5_Feedfrwrd.pdf</a></li></ul>
+<p>The following was the result of the first feedback implementation.</p>
+<figure class="figure"><img src="websiteImages/ur5e/task2.2_images/no_feedforward.png" alt="no feedforward" loading="lazy"></figure>
+<p>Qualitative observations of the graph show much better alignment during the linear and constant sections of the trapazoidal trajectory; however, performance degrades at the trapezoid's corners (t1, t2, t3), where the acceleration changes discontinuously. These jerk discontinuities, for a moment, desynchronize the feedforward term from the system's actual achievable response. Quantitative observations show an improvement all around.</p>
+<ul><li>Average error: 0.0082 rad/s -&gt; 0.0021 rad/s</li><li>Max error: 0.0410 rad/s -&gt; 0.0162 rad/s</li><li>Alignment: 98.4% -&gt; 99.6%</li></ul>
+<figure class="figure"><img src="websiteImages/ur5e/task2.2_images/feedforward.png" alt="feedforward" loading="lazy"></figure>
+<p>At this point, I noticed the least performing joint was joint 2. The alignment of joint 2 was qualitatively and quantitatively worse than the other joints relatively (97.8% compared to ~99.7 of other joints).</p>
+<p>I suspected this was due to joint 2 was carrying the rest of the arm and fighting against gravity. One solution is increasing the Kp and Ki gains of joint 2. Higher Kp means the controller decreases the required amount of error needed for the same load torque. Higher Ki will keep accumulating residual error over time and add torque until there is no sag from joint 2.</p>
+<p>Increasing Kp from 375 to 475 and Ki from 300 to 350 gave marginally better results.</p>
+<figure class="figure"><img src="websiteImages/ur5e/task2.2_images/kp475_ki350.png" alt="no feedforward" loading="lazy"></figure>
+<p>I continuously increased Kp and Ki until I no longer saw improvement. This was at Kp = 1575 and Ki = 900 where joint 2 performance nearly matched that of the other joints.</p>
+<figure class="figure"><img src="websiteImages/ur5e/task2.2_images/kp1575_ki900.png" alt="no feedforward" loading="lazy"></figure>
+<p>The problem with high Kp and Ki values is possible system instability to small errors and external noise in real world scenerios; although this was not seen in simulation.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Task 2 generalized the trapezoidal velocity profile from Task 1's fixed-coefficient implementation into a reusable model, then used it to track a full joint-space trajectory between two joint configurations.</p>
+<p>Pure PID feedback alone produced a reactive lag (98.4% overall alignment), since the loop needed a buildup of error before it could supply torque for a moving target. Adding command/setpoint feedforward (<code>Kv * target_qvel</code>) closed most of that gap (99.6%) by supplying the expected torque ahead of time rather than waiting on error, leaving the corners of the trapezoid (where commanded acceleration is discontinuous) as the main remaining source of error.</p>
+<p>Joint 2 stood out as the weakest performer because it carries the rest of the arm's weight against gravity, and feedback alone needs a position sag to generate enough holding torque. Increasing Kp and Ki for that joint specifically closed nearly all of the remaining gap, at the cost of gains that would be riskier for noise/instability on real hardware than they are in simulation.</p>
+<h2 id="links">Links</h2>
+<ul><li><a href="https://www.youtube.com/watch?v=-oGNxB86YEk" target="_blank" rel="noopener noreferrer">https://www.youtube.com/watch?v=-oGNxB86YEk</a></li></ul>
+                </article>
+            </div>
+
+            <nav class="doc-footnav" aria-label="Other writeups">
+                <a href="ur5e-task1.html" class="doc-footlink"><span class="mono doc-footlink-num">TASK 01</span><span class="mono doc-footlink-title">Joint Control &rarr;</span></a>
+                <a href="ur5e-task3.html" class="doc-footlink"><span class="mono doc-footlink-num">TASK 03</span><span class="mono doc-footlink-title">Jacobian &rarr;</span></a>
+            </nav>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-inner">
+            <span class="mono footer-text">Saejoon Park &copy; 2025</span>
+            <span class="mono footer-sep">&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;</span>
+            <span class="mono footer-text">ECE @ Cornell University</span>
+        </div>
+    </footer>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+    <script src="script.js"></script>
+    <script defer src="docs.js"></script>
+</body>
+</html>

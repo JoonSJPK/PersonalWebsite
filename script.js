@@ -4,6 +4,83 @@
    PROJECT DATA
 ────────────────────────────────────────────── */
 const projectDetails = {
+    project_analog_nn: {
+        title: 'Analog Neural Network',
+        description: 'A mixed-signal attitude controller for CubeSats. A continuous-time recurrent neural network built in analog hardware computes the nonlinear inverse dynamics on the feedforward path, closed by a digital ADRC loop cheap enough to run on the microcontroller a CubeSat already carries — buying model-based pointing precision inside a CubeSat power budget.',
+        technologies: ['KiCad', 'Analog Design', 'CTRNN', 'ADRC', 'RP2040', 'Mixed-Signal'],
+        features: [
+            '> Continuous-time recurrent net: 3 inputs, 4 hidden states, 1 torque output',
+            '> 4×3 input and 4×4 recurrent crossbars of digital potentiometers',
+            '> 64 weights loaded through eight daisy-chained 74HC595 shift registers',
+            '> Signed weight pairs referenced to a mid-supply VREF rail',
+            '> Digital ADRC + extended state observer closes the loop',
+            '> Five-controller comparison against tuned digital PID and idealized ADRC'
+        ],
+        images: [
+            'websiteImages/analog_nn/board_iso.png',
+            'websiteImages/analog_nn/board_top.png',
+            'websiteImages/analog_nn/schematic_full.png',
+            'websiteImages/analog_nn/crossbar_input.png',
+            'websiteImages/analog_nn/shift_registers.png',
+            'websiteImages/analog_nn/torque_stage.png'
+        ],
+        docs: [
+            { tag: 'DRAFT', title: 'Full writeup — coming soon', href: 'analog-nn-writeup.html' }
+        ]
+    },
+    project_ur5e: {
+        title: 'UR5e Control Project',
+        description: 'Simulated control of a Universal Robots UR5e arm in MuJoCo — a custom torque-controlled PID joint controller tuned by an ITAE sweep, joint-space trajectory tracking with command feedforward, and Jacobian-based inverse kinematics that drives the end-effector to a full target pose and grasps a bottle.',
+        technologies: ['MuJoCo', 'Python', 'NumPy', 'Control Theory', 'Robotics', 'Fusion360'],
+        features: [
+            '> Custom PID applied as direct joint torques (no built-in position actuator)',
+            '> ITAE gain sweep with a torque-overage penalty (λ = 1e-8)',
+            '> Physically-derived joint damping from a published UR5e electro-mechanical model',
+            '> Generalized trapezoidal velocity profile + command feedforward (99.6% alignment)',
+            '> DH forward kinematics validated against MuJoCo to under 2 mm',
+            '> Damped least-squares IK on the full 6×6 Jacobian (position + orientation)',
+            '> Franka Panda gripper integration and a three-phase bottle grasp'
+        ],
+        images: [
+            'websiteImages/ur5e/task3_images/gripper_bottle.gif',
+            'websiteImages/ur5e/task3_images/task3_gripper.png',
+            'websiteImages/ur5e/task1_images/test_bottle_scene.png',
+            'websiteImages/ur5e/task3_images/ee_path.png',
+            'websiteImages/ur5e/task1.1_images/lambda_sweep.png',
+            'websiteImages/ur5e/task2.2_images/feedforward.png',
+            'websiteImages/ur5e/task1_images/test_bottle.png'
+        ],
+        docs: [
+            { tag: 'TASK 01', title: 'Joint Control',       href: 'ur5e-task1.html' },
+            { tag: 'TASK 02', title: 'Trajectory Tracking', href: 'ur5e-task2.html' },
+            { tag: 'TASK 03', title: 'Jacobian',            href: 'ur5e-task3.html' }
+        ]
+    },
+    project_digi_trpt: {
+        title: 'Digital Trumpet',
+        description: 'A USB-MIDI digital trumpet built from scratch — a custom RP2040 main board, a 3-key hotswap MX valve board, and a capacitive breath sensor, with firmware that derives pitch from bell elevation via an IMU and plays straight into GarageBand as a class-compliant MIDI device.',
+        technologies: ['KiCad', 'RP2040', 'CircuitPython', 'Web MIDI', 'MPR121', 'PCB Design'],
+        features: [
+            '> Custom RP2040 main board (USB-C, LSM6DS3TR-C IMU, MPR121 touch)',
+            '> 3-key hotswap valve board — Cherry MX 5-pin, Kailh sockets, no matrix',
+            '> Capacitive breath pad shrunk 59% in area over the 3-pad revision',
+            '> Roll-independent pitch from bell elevation, not a naive two-axis atan2',
+            '> Fingering settle timing that kills phantom intermediate notes',
+            '> Browser test bench + live calibration over MIDI CC, saved to RP2040 NVM',
+            '> Class-compliant USB MIDI — plays into GarageBand with no computer'
+        ],
+        images: [
+            'websiteImages/digi_trpt/IMG_4645.jpeg',
+            'websiteImages/digi_trpt/main_board.png',
+            'websiteImages/digi_trpt/main_board_top.png',
+            'websiteImages/digi_trpt/switch_board.png',
+            'websiteImages/digi_trpt/cap_touch_board.png',
+            'websiteImages/digi_trpt/valve_bench.png'
+        ],
+        videos: [
+            { id: 'sAYiC3EUOB8', title: 'Digital Trumpet — playing into GarageBand', short: true }
+        ]
+    },
     project_glove: {
         title: 'Glove Mouse',
         description: 'ATMega32U4 with custom conductive inputs and IMU — a position-tracking glove device (Valorant compatible). Computer Vision via OpenCV enables hand gesture tracking for simulated clicks and volume control at 30 fps.',
@@ -13,6 +90,10 @@ const projectDetails = {
             'websiteImages/glove_mouse/glove_mouse1.png',
             'websiteImages/glove_mouse/glove_mouse2.png',
             'websiteImages/glove_mouse/glove_mouse3.png'
+        ],
+        videos: [
+            { id: 'CwnOLpYsyiE', title: 'Computer Vision \u00D7 Glove Mouse', short: true },
+            { id: 'FmShcpANS84', title: 'Conductive Finger Tips \u00D7 Glove Mouse', short: true }
         ]
     },
     project1: {
@@ -64,6 +145,9 @@ const projectDetails = {
             'websiteImages/eBike/IMG_2983 2.png',
             'websiteImages/eBike/IMG_3185.png',
             'websiteImages/eBike/IMG_3227.png'
+        ],
+        videos: [
+            { id: 'v5UjKmCHbAc', title: 'DIY E-Bike V1' }
         ]
     },
     project5: {
@@ -232,7 +316,7 @@ function initHeroTypewriter() {
     const el = document.getElementById('heroSubtitle');
     if (!el) return;
 
-    const text = '> ECE @ CORNELL UNIVERSITY';
+    const text = '> ECE @ CORNELL UNIVERSITY · CONCENTRATION IN ROBOTICS · CLASS OF 2028';
     let i = 0;
 
     function type() {
@@ -424,6 +508,25 @@ function openProject(projectId) {
           ).join('')}</div>`
         : '';
 
+    const videosHTML = project.videos?.length
+        ? `<div class="terminal-section">
+                    <span class="terminal-key">// VIDEO${project.videos.length > 1 ? 'S' : ''}</span>
+                    <div class="modal-videos">${project.videos.map((v, i) =>
+                        `<div class="modal-video${v.short ? ' modal-video-short' : ''}">
+                            <div class="video-label mono">${String(i + 1).padStart(2, '0')}. ${v.title.toUpperCase()}</div>
+                            <div class="video-frame-wrap" data-vid="${v.id}" onclick="loadVideo(this)" role="button" tabindex="0" aria-label="Play: ${v.title}">
+                                <div class="video-facade">
+                                    <img src="https://img.youtube.com/vi/${v.id}/hqdefault.jpg" alt="${v.title} thumbnail" loading="lazy">
+                                    <div class="video-play-btn">
+                                        <div class="video-play-icon">&#x25B6;</div>
+                                        <span class="video-play-label">PLAY</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`).join('')}</div>
+                </div>`
+        : '';
+
     const techHTML = project.technologies.map(t =>
         `<span class="tag mono">[${t.toUpperCase()}]</span>`
     ).join('');
@@ -431,6 +534,18 @@ function openProject(projectId) {
     const featuresHTML = project.features.map(f =>
         `<li>${f}</li>`
     ).join('');
+
+    const docsHTML = project.docs?.length
+        ? `<div class="terminal-section">
+                    <span class="terminal-key">// WRITEUPS</span>
+                    <div class="doc-links">${project.docs.map(d =>
+                        `<a class="doc-link" href="${d.href}">
+                            <span class="doc-link-num">${d.tag}</span>
+                            <span class="doc-link-title">${d.title}</span>
+                            <span class="doc-link-arrow">&rarr;</span>
+                        </a>`).join('')}</div>
+                </div>`
+        : '';
 
     modal.innerHTML = `
         <div class="modal-terminal">
@@ -440,10 +555,12 @@ function openProject(projectId) {
             </div>
             <div class="terminal-body">
                 ${galleryHTML}
+                ${videosHTML}
                 <div class="terminal-section">
                     <span class="terminal-key">// DESCRIPTION</span>
                     <p class="terminal-value">${project.description}</p>
                 </div>
+                ${docsHTML}
                 <div class="terminal-section">
                     <span class="terminal-key">// TECHNOLOGIES</span>
                     <div class="tech-tags">${techHTML}</div>
@@ -466,6 +583,16 @@ function openProject(projectId) {
             img.addEventListener('click', () => openLightbox(project.images, idx));
         });
     }
+
+    // The modal is built after initKeyboardNav ran, so wire its videos here
+    modal.querySelectorAll('.video-frame-wrap[tabindex]').forEach(el => {
+        el.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                el.click();
+            }
+        });
+    });
 
     function close() {
         modal.classList.remove('open');

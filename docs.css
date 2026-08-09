@@ -1,0 +1,486 @@
+/* ──────────────────────────────────────────────────────────
+   UR5e WRITEUP PAGES
+   Layered on top of style.css — same palette, same type.
+   ────────────────────────────────────────────────────────── */
+
+.doc-page {
+    background:
+        repeating-linear-gradient(90deg,
+            transparent, transparent 119px,
+            rgba(216, 211, 204, 0.28) 119px,
+            rgba(216, 211, 204, 0.28) 120px),
+        var(--bg);
+}
+
+/* ── Header ── */
+.doc-header {
+    position: sticky;
+    top: 0;
+    background: rgba(248, 247, 245, 0.94);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+}
+
+.doc-progress {
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    will-change: transform;
+}
+
+.doc-header .nav-links {
+    display: flex;
+    gap: 1.15rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.doc-header .nav-link.active {
+    color: var(--accent);
+    opacity: 1;
+}
+
+/* ── Shell ── */
+.doc-main {
+    padding: 3.5rem 0 5rem;
+}
+
+.doc-container {
+    width: 100%;
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+/* ── Title block ── */
+.doc-titleblock {
+    border-top: 1px solid var(--accent);
+    border-bottom: 1px solid var(--border);
+    padding: 1.6rem 0 1.9rem;
+    margin-bottom: 3rem;
+}
+
+.doc-eyebrow {
+    display: block;
+    font-size: 0.64rem;
+    letter-spacing: 0.22em;
+    color: var(--muted);
+    margin-bottom: 1rem;
+}
+
+.doc-title {
+    font-size: clamp(2rem, 6vw, 3.4rem);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.02;
+    text-transform: uppercase;
+}
+
+.doc-blurb {
+    margin-top: 1rem;
+    max-width: 60ch;
+    font-size: 1.02rem;
+    font-style: italic;
+    color: var(--muted);
+    line-height: 1.65;
+}
+
+/* ── Two-column layout ── */
+.doc-layout {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 3.5rem;
+    align-items: start;
+}
+
+/* ── Table of contents ── */
+.doc-toc {
+    position: sticky;
+    top: calc(var(--nav-h) + 2.5rem);
+    max-height: calc(100vh - var(--nav-h) - 5rem);
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    border-left: 1px solid var(--border);
+}
+
+.doc-toc::-webkit-scrollbar { width: 3px; }
+.doc-toc::-webkit-scrollbar-track { background: transparent; }
+.doc-toc::-webkit-scrollbar-thumb { background: var(--border); }
+
+.doc-toc-label {
+    display: block;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    padding: 0 0 0.85rem 1rem;
+}
+
+.doc-toc ul { list-style: none; }
+
+.doc-toc li a {
+    display: block;
+    font-size: 0.68rem;
+    line-height: 1.45;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+    padding: 0.32rem 0 0.32rem 1rem;
+    margin-left: -1px;
+    border-left: 1px solid transparent;
+    transition: color 0.18s, border-color 0.18s;
+}
+
+.doc-toc li a:hover { color: var(--text); }
+
+.doc-toc li a.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+}
+
+.doc-toc .toc-l3 a { padding-left: 1.9rem; opacity: 0.82; }
+
+/* ── Body copy ── */
+.doc-body {
+    max-width: 74ch;
+    font-family: var(--serif);
+    font-size: 1.045rem;
+    line-height: 1.78;
+    color: var(--text);
+}
+
+.doc-body > * + * { margin-top: 1.15rem; }
+
+.doc-body h2,
+.doc-body h3,
+.doc-body h4 {
+    font-family: var(--mono);
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    scroll-margin-top: calc(var(--nav-h) + 1.5rem);
+}
+
+.doc-body h2 {
+    font-size: 1.32rem;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    margin-top: 3.4rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--border);
+}
+
+.doc-body h3 {
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-top: 2.4rem;
+}
+
+.doc-body h4 {
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    margin-top: 1.8rem;
+}
+
+.doc-body > *:first-child { margin-top: 0; }
+.doc-body h2:first-child { border-top: none; padding-top: 0; }
+
+.doc-body a {
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    word-break: break-word;
+    transition: border-color 0.18s;
+}
+
+.doc-body a:hover { border-bottom-color: var(--accent); }
+
+.doc-body strong { font-weight: 500; color: var(--accent); }
+
+.doc-body ul {
+    list-style: none;
+    padding-left: 1.1rem;
+}
+
+.doc-body li {
+    position: relative;
+    padding-left: 1.1rem;
+    margin-top: 0.5rem;
+}
+
+.doc-body li::before {
+    content: '\2500';
+    position: absolute;
+    left: 0;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+}
+
+.doc-body ol {
+    padding-left: 2.2rem;
+}
+
+.doc-body ol li {
+    padding-left: 0.35rem;
+    margin-top: 0.5rem;
+}
+
+.doc-body ol li::before { content: none; }
+
+.doc-body ol li::marker {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.doc-body .doc-refs {
+    padding-left: 0;
+}
+
+.doc-body .doc-refs li {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    line-height: 1.5;
+}
+
+.doc-body hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2.6rem 0;
+}
+
+.doc-body blockquote {
+    border-left: 2px solid var(--accent);
+    padding: 0.3rem 0 0.3rem 1.2rem;
+    color: var(--muted);
+    font-style: italic;
+}
+
+/* ── Code ── */
+.doc-body code {
+    font-family: var(--mono);
+    font-size: 0.845em;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 0.08em 0.34em;
+    white-space: nowrap;
+}
+
+.doc-body pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--accent);
+    padding: 1rem 1.15rem;
+    overflow-x: auto;
+}
+
+.doc-body pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.79rem;
+    line-height: 1.65;
+    white-space: pre;
+    color: var(--text);
+}
+
+.doc-body pre::-webkit-scrollbar { height: 3px; }
+.doc-body pre::-webkit-scrollbar-track { background: transparent; }
+.doc-body pre::-webkit-scrollbar-thumb { background: var(--border); }
+
+/* ── Tables ── */
+.doc-body .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+}
+
+.doc-body table {
+    border-collapse: collapse;
+    width: 100%;
+    font-family: var(--mono);
+    font-size: 0.76rem;
+}
+
+.doc-body th,
+.doc-body td {
+    text-align: left;
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+}
+
+.doc-body th {
+    background: var(--surface);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.65rem;
+}
+
+.doc-body tbody tr:last-child td { border-bottom: none; }
+
+/* ── Figures ── */
+.doc-body figure {
+    margin: 2rem 0;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 0.6rem;
+}
+
+.doc-body figure img {
+    width: 100%;
+    height: auto;
+    display: block;
+    cursor: none;
+    transition: opacity 0.2s;
+}
+
+.doc-body figure img:hover { opacity: 0.86; }
+
+.doc-body figure.figure-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0.6rem;
+}
+
+/* An italic-only paragraph right after a figure reads as its caption. */
+.doc-body figure + p > em:only-child {
+    display: block;
+    font-family: var(--mono);
+    font-style: normal;
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: -0.7rem;
+}
+
+/* ── Math ── */
+.doc-body .katex { font-size: 1.02em; }
+
+.doc-body .katex-display {
+    margin: 1.6rem 0;
+    padding: 0.4rem 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.doc-body .katex-display::-webkit-scrollbar { height: 3px; }
+.doc-body .katex-display::-webkit-scrollbar-thumb { background: var(--border); }
+
+.doc-body .tex-raw {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+/* ── Footer nav ── */
+.doc-footnav {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 4.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--accent);
+}
+
+.doc-footlink {
+    border: 1px solid var(--border);
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.doc-footlink:hover {
+    border-color: var(--accent);
+    background: var(--surface);
+}
+
+.doc-footlink-num {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+}
+
+.doc-footlink-title {
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
+}
+
+/* ── Placeholder page (writeup not published yet) ── */
+.doc-placeholder {
+    max-width: 62ch;
+    padding: 1rem 0 4rem;
+}
+
+.doc-placeholder-art {
+    font-size: 0.7rem;
+    line-height: 1.35;
+    color: var(--muted);
+    overflow-x: auto;
+    margin-bottom: 2rem;
+}
+
+.doc-placeholder-text {
+    font-size: 1.045rem;
+    line-height: 1.78;
+    color: var(--muted);
+    margin-bottom: 2.25rem;
+}
+
+.doc-placeholder-link {
+    display: inline-block;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    padding: 0.6rem 1rem;
+    cursor: none;
+    transition: color 0.2s, background 0.2s;
+}
+
+.doc-placeholder-link:hover {
+    color: var(--bg);
+    background: var(--accent);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+    .doc-layout {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .doc-toc {
+        position: static;
+        max-height: none;
+        border-left: none;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        padding: 1rem 0;
+    }
+
+    .doc-toc ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0 1rem;
+    }
+
+    .doc-toc li a { padding-left: 0; border-left: none; }
+    .doc-toc li a.active { border-left: none; text-decoration: underline; }
+    .doc-toc .toc-l3 { display: none; }
+    .doc-toc-label { padding-left: 0; }
+}
+
+@media (max-width: 640px) {
+    .doc-container { padding: 0 1.25rem; }
+    .doc-main { padding: 2.5rem 0 3.5rem; }
+    .doc-body { font-size: 1rem; }
+    .doc-body h2 { margin-top: 2.6rem; }
+    .doc-header .nav-links { gap: 0.7rem; }
+    .doc-header .nav-link { font-size: 0.6rem; }
+}

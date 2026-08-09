@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UR5e &mdash; Task 03: Jacobian &mdash; Saejoon Park</title>
+    <meta name="description" content="Forward kinematics, the Jacobian, and damped least-squares IK driving a bottle grasp.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="docs.css">
+</head>
+<body class="doc-page">
+    <div id="cursor-follower" aria-hidden="true"></div>
+
+    <header class="header doc-header">
+        <nav class="nav">
+            <div class="nav-brand">
+                <a href="index.html#projects" class="brand-link mono">SP_</a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html#projects" class="nav-link mono">[&larr; PROJECTS]</a></li>
+                <li><a href="ur5e-task1.html" class="nav-link mono">[TASK 01]</a></li>
+                <li><a href="ur5e-task2.html" class="nav-link mono">[TASK 02]</a></li>
+                <li><a href="ur5e-task3.html" class="nav-link mono active">[TASK 03]</a></li>
+            </ul>
+        </nav>
+        <div class="doc-progress" id="docProgress" aria-hidden="true"></div>
+    </header>
+
+    <main class="doc-main">
+        <div class="doc-container">
+            <div class="doc-titleblock">
+                <span class="doc-eyebrow mono">UR5E CONTROL PROJECT &mdash; TASK 03</span>
+                <h1 class="doc-title mono">Jacobian</h1>
+                <p class="doc-blurb newsreader">Forward kinematics, the Jacobian, and damped least-squares IK driving a bottle grasp.</p>
+            </div>
+
+            <div class="doc-layout">
+                <aside class="doc-toc" aria-label="Table of contents">
+                    <span class="doc-toc-label mono">// CONTENTS</span>
+                    <ul>
+                        <li class="toc-l2"><a href="#task-3-jacobian-objectives" class="mono">Task 3 (Jacobian) Objectives</a></li>
+                        <li class="toc-l2"><a href="#step-1-forward-kinematics" class="mono">Step 1 (Forward Kinematics)</a></li>
+                        <li class="toc-l3"><a href="#denavit-hartenberg-convention" class="mono">Denavit-Hartenberg Convention</a></li>
+                        <li class="toc-l3"><a href="#elementary-transformation" class="mono">Elementary Transformation</a></li>
+                        <li class="toc-l3"><a href="#chaining-transformations-together-for-forward-kinematics" class="mono">Chaining Transformations Together For Forward Kinematics</a></li>
+                        <li class="toc-l3"><a href="#validating-the-fk-against-mujoco" class="mono">Validating the FK against MuJoCo</a></li>
+                        <li class="toc-l2"><a href="#step-2-error" class="mono">Step 2 (Error)</a></li>
+                        <li class="toc-l2"><a href="#step-3-jacobian" class="mono">Step 3 (Jacobian)</a></li>
+                        <li class="toc-l3"><a href="#build-j-v" class="mono">Build J_v</a></li>
+                        <li class="toc-l2"><a href="#step-4-damped-least-squares-solve" class="mono">Step 4: Damped Least-Squares Solve</a></li>
+                        <li class="toc-l3"><a href="#why-we-can-t-just-invert" class="mono">Why we can't just invert</a></li>
+                        <li class="toc-l3"><a href="#algorithm" class="mono">Algorithm</a></li>
+                        <li class="toc-l2"><a href="#the-pseudoinverse-moore-penrose-inverse" class="mono">The Pseudoinverse (Moore-Penrose inverse)</a></li>
+                        <li class="toc-l2"><a href="#full-jacobian-6x6-implementation" class="mono">Full Jacobian (6x6) Implementation</a></li>
+                        <li class="toc-l3"><a href="#step-1-forward-kinematics-addition" class="mono">Step 1 (Forward Kinematics): addition</a></li>
+                        <li class="toc-l3"><a href="#step-2-error-now-a-6-vector-pose-error" class="mono">Step 2 (Error): now a 6-vector pose error</a></li>
+                        <li class="toc-l3"><a href="#step-3-jacobian-add-the-orientation-rows" class="mono">Step 3 (Jacobian): add the orientation rows</a></li>
+                        <li class="toc-l2"><a href="#step-4-damped-least-squares-solve-6x6-same-formula-larger-dimensions" class="mono">Step 4: Damped Least-Squares Solve (6x6): same formula, larger dimensions</a></li>
+                        <li class="toc-l3"><a href="#step-5-convergence" class="mono">Step 5 Convergence</a></li>
+                        <li class="toc-l2"><a href="#full-pose-6x6-demo" class="mono">Full Pose (6x6) Demo</a></li>
+                        <li class="toc-l2"><a href="#adding-a-gripper-franka-panda-hand" class="mono">Adding a Gripper (Franka Panda Hand)</a></li>
+                        <li class="toc-l3"><a href="#sourcing-the-model" class="mono">Sourcing the model</a></li>
+                        <li class="toc-l2"><a href="#grabbing-the-bottle" class="mono">Grabbing the Bottle</a></li>
+                        <li class="toc-l3"><a href="#aiming-at-the-right-point-on-the-bottle" class="mono">Aiming at the right point on the bottle</a></li>
+                        <li class="toc-l3"><a href="#problem-the-bottle-kept-slipping-out" class="mono">Problem: the bottle kept slipping out</a></li>
+                    </ul>
+                </aside>
+
+                <article class="doc-body">
+<h2 id="task-3-jacobian-objectives">Task 3 (Jacobian) Objectives</h2>
+<ul><li>Using inverse kinematics or a Jacobian-based resolved-rate control approach, move the end-effector toward the CAD object you created.</li><li>If possible, also visualize the Cartesian path of the end-effector.</li></ul>
+<h2 id="step-1-forward-kinematics">Step 1 (Forward Kinematics)</h2>
+<h3 id="denavit-hartenberg-convention">Denavit-Hartenberg Convention</h3>
+<p>A robot arm consists of rigid links that are connected by joints. In forward kinematics, a coordinate frame is placed onto each link (x, y, z axis). The process of foward kinematics allows you to find the cartesian coordinates of a end effector of the UR5e arm based off of joint angles (theta) and link lengths (m).</p>
+<p>In general, relating one frame to another in 3D takes 6 numbers (3 position, 3 orientation). However, the Denavit-Hartenberg convention aligns each frame's z-aix with its joint's rotation axis and its x axis along the common perpendicular to the next joint, therefore, allowing us to use only 4 numbers to describe how to travel from frame i - 1 to frame i.</p>
+<ul><li><strong>θᵢ</strong>: rotate about z. For a revolute joint this is the joint angle: what the motor turns.</li><li><strong>dᵢ</strong>: slide along z (the link offset, how far the next joint is stacked along this axis).</li><li><strong>aᵢ</strong>: slide along x (the link length, how far the next joint reaches sideways).</li><li><strong>αᵢ</strong>: rotate about x (the link twist, how much the next joint's axis is tilted relative to this one).</li></ul>
+<p>This information was gathered from a UR5e datasheet and organized into the table below. The only variable that changes as the robot moves is the joint position θ; d, a, and α are fixed constants set by the robot's geometry.</p>
+<p><strong>DH parameter table</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Joint i</th><th>θᵢ</th><th>dᵢ</th><th>aᵢ</th><th>αᵢ</th></tr></thead><tbody><tr><td>1</td><td>θ0</td><td>0.1625</td><td>0</td><td>90°</td></tr><tr><td>2</td><td>θ1</td><td>0</td><td>−0.425</td><td>0°</td></tr><tr><td>3</td><td>θ2</td><td>0</td><td>−0.3922</td><td>0°</td></tr><tr><td>4</td><td>θ3</td><td>0.1333</td><td>0</td><td>90°</td></tr><tr><td>5</td><td>θ4</td><td>0.0997</td><td>0</td><td>−90°</td></tr><tr><td>6</td><td>θ5</td><td>0.0996</td><td>0</td><td>0°</td></tr></tbody></table></div>
+<p><a href="https://www.universal-robots.com/articles/ur/application-installation/dh-parameters-for-calculations-of-kinematics-and-dynamics/" target="_blank" rel="noopener noreferrer">UR5e DH Parameters: Universal Robots</a></p>
+<h3 id="elementary-transformation">Elementary Transformation</h3>
+<p>Traveling from one joint's frame to the next happens in four simple steps. Each of the four DH parameters corresponds to one elementary transform, a basic rotation or translation written as a 4×4 matrix so that a rotation and a translation can ride in the same object. Multiplying the four elementary transforms together gives the single "hop" <span data-tex>T_{i-1}^{\,i}</span> from frame <span data-tex>i-1</span> to frame <span data-tex>i</span>.</p>
+<p>To keep the matrices readable, let Cθ = cos θ, Sθ = sin θ, Cα = cos α, Sα = sin α.</p>
+<div data-tex data-display>T_{i-1}^{\,i} = \text{Rot}_z(\theta)\;\text{Trans}_z(d)\;\text{Trans}_x(a)\;\text{Rot}_x(\alpha)</div>
+<p>Read left to right, the four moves are:</p>
+<p><strong>Rotₓ z(θ)</strong>: rotation about z by the joint angle. This is the only one of the four that changes while the robot runs, since it is what the motor actually turns:</p>
+<div data-tex data-display>\text{Rot}_z(\theta)=\begin{bmatrix} C\theta &amp; -S\theta &amp; 0 &amp; 0\\ S\theta &amp; C\theta &amp; 0 &amp; 0\\ 0 &amp; 0 &amp; 1 &amp; 0\\ 0 &amp; 0 &amp; 0 &amp; 1 \end{bmatrix}</div>
+<p><strong>Transz(d)</strong>: translation along z by the link offset, stacking the next joint up along the axis:</p>
+<div data-tex data-display>\text{Trans}_z(d)=\begin{bmatrix} 1 &amp; 0 &amp; 0 &amp; 0\\ 0 &amp; 1 &amp; 0 &amp; 0\\ 0 &amp; 0 &amp; 1 &amp; d\\ 0 &amp; 0 &amp; 0 &amp; 1 \end{bmatrix}</div>
+<p><strong>Transₓ(a)</strong>: translation along x by the link length, reaching out to where the next joint sits:</p>
+<div data-tex data-display>\text{Trans}_x(a)=\begin{bmatrix} 1 &amp; 0 &amp; 0 &amp; a\\ 0 &amp; 1 &amp; 0 &amp; 0\\ 0 &amp; 0 &amp; 1 &amp; 0\\ 0 &amp; 0 &amp; 0 &amp; 1 \end{bmatrix}</div>
+<p><strong>Rotₓ(α)</strong>: rotation about x by the link twist, tilting the frame so its z axis lines up with the next joint's spin axis:</p>
+<div data-tex data-display>\text{Rot}_x(\alpha)=\begin{bmatrix} 1 &amp; 0 &amp; 0 &amp; 0\\ 0 &amp; C\alpha &amp; -S\alpha &amp; 0\\ 0 &amp; S\alpha &amp; C\alpha &amp; 0\\ 0 &amp; 0 &amp; 0 &amp; 1 \end{bmatrix}</div>
+<p>Doing all four in order and multiplying them out collapses to one matrix. Its top-left 3×3 block is the rotation and its right-hand column is the position, so this single <span data-tex>T_{i-1}^{\,i}</span> carries both how the next frame is turned and where it sits:</p>
+<div data-tex data-display>T_{i-1}^{\,i}=\begin{bmatrix} C\theta &amp; -S\theta\,C\alpha &amp; S\theta\,S\alpha &amp; a\,C\theta\\ S\theta &amp; C\theta\,C\alpha &amp; -C\theta\,S\alpha &amp; a\,S\theta\\ 0 &amp; S\alpha &amp; C\alpha &amp; d\\ 0 &amp; 0 &amp; 0 &amp; 1 \end{bmatrix}</div>
+<h3 id="chaining-transformations-together-for-forward-kinematics">Chaining Transformations Together For Forward Kinematics</h3>
+<p>A single elementary transform only carries you one joint forward. To reach the flange from the base you ride the entire chain, multiplying the hops together in the order you meet them. Building that up one product at a time gives the cumulative products:</p>
+<div data-tex data-display>\begin{aligned}
+T_0^{\,2} &amp;= T_0^{\,1}\,T_1^{\,2} \\
+T_0^{\,3} &amp;= T_0^{\,2}\,T_2^{\,3} \\
+&amp;\;\vdots \\
+T_0^{\,6} &amp;= T_0^{\,5}\,T_5^{\,6}
+\end{aligned}</div>
+<p><span data-tex>T_0^{\,1}</span>: "the transform from frame 0 to frame 1"</p>
+<p>Where:</p>
+<ul><li><span data-tex>T_{i-1}^{\,i}</span> is an elementary step, one joint to the next.</li><li><span data-tex>T_0^{\,i}</span> is a cumulative transform, the base all the way out to frame <span data-tex>i</span>.</li></ul>
+<p>Stacking all six elementary steps gives the transform from the base to the flange:</p>
+<div data-tex data-display>T_0^{\,6} = T_0^{\,1}\,T_1^{\,2}\,T_2^{\,3}\,T_3^{\,4}\,T_4^{\,5}\,T_5^{\,6}</div>
+<p>Every cumulative transform has the same shape, a rotation block sitting next to a position column:</p>
+<div data-tex data-display>T_0^{\,i} = \left[\begin{array}{c|c} R_0^{\,i} &amp; P_i \\\hline \mathbf{0}^\top &amp; 1 \end{array}\right]</div>
+<ul><li>Column 1 → frame <em>i</em>'s x-axis</li><li>Column 2 → frame <em>i</em>'s y-axis</li><li>Column 3 → frame <em>i</em>'s z-axis = <span data-tex>z_i</span></li><li>Column 4 → the origin <span data-tex>p_i</span></li></ul>
+<p>For the final frame, the right-hand column is <span data-tex>p_e</span>, the end effector position in Cartesian coordinates measured in meters, and the top-left 3x3 block is <span data-tex>R_e</span>, which describes the end effector's orientation. Column 3, the frame's z-axis <span data-tex>z_i</span> is the axis that joint <span data-tex>i</span> spins about.</p>
+<h3 id="validating-the-fk-against-mujoco">Validating the FK against MuJoCo</h3>
+<p>My FK builds <span data-tex>T_0^{\,6}</span> in my own DH base frame, but the IK target is read out of MuJoCo (e.g. <code>data.geom_xpos</code> / <code>data.site_xpos</code>), which lives in the MuJoCo world frame. If those two frames don't actually describe the same physical point in the same coordinates, every error vector <span data-tex>e = p_{target} - p_e</span> is wrong, and the arm would chase a ghost target even with perfectly correct math.</p>
+<p>A second trap is comparing the wrong frame. My DH chain ends at the flange (frame 6), while MuJoCo's <code>attachment_site</code> could carry an extra tool offset or rotation. Comparing the flange against a site that has been pushed forward by a tool would show a constant position gap that is <em>just a frame-definition difference, not an FK bug</em>: and chasing that "error" would put the math in a loop.</p>
+<p><code>validate_fk()</code> (called once at startup in <code>jacobian.py</code>) validates these problems don't exist. For the current configuration plus four random joint configurations it:</p>
+<ol><li>writes the joints into <code>data.qpos[:6]</code> and calls <code>mujoco.mj_forward</code> so MuJoCo reports the true frame positions for that pose,</li><li>computes my DH world position <span data-tex>p_e</span> for the same <code>qpos</code>,</li><li>measures the Euclidean residual against the <code>attachment_site</code> and the <code>wrist_3_link</code> body: and prints each, so any offset between flange and tool is shown,</li><li>shows the worst residual stays under a 2 mm tolerance, then restores the original state.</li></ol>
+<div data-tex data-display>\text{residual} = \lVert\, p_e^{\text{DH}} - p^{\text{MuJoCo}} \,\rVert &lt; 2\ \text{mm}</div>
+<p>This confirms two things: the DH chain and MuJoCo agree on where the end-effector is, and on this model the <code>attachment_site</code> sits right at the flange with no extra tool offset.</p>
+<h2 id="step-2-error">Step 2 (Error)</h2>
+<p>Forward kinematics gives me the current end effector position <span data-tex>p_e</span>. The next thing the controller needs is how far that is from the target, which is the straight-line difference between where I want the tool and where it is right now:</p>
+<div data-tex data-display>e = p_{target} - p_e</div>
+<p>This error vector points from the current position toward the target, so it also tells the tool which way to head. Its length says how much ground is left to cover:</p>
+<div data-tex data-display>\lVert e \rVert = \sqrt{e_x^2 + e_y^2 + e_z^2}</div>
+<p>Once that magnitude drops below a small tolerance, the tool has arrived and the loop can stop.</p>
+<h2 id="step-3-jacobian">Step 3 (Jacobian)</h2>
+<h3 id="build-j-v">Build <span data-tex>J_v</span></h3>
+<p>The Jacobian is the bridge between joint speeds and tool speed. It answers: if I spin this joint a little, which way and how fast does the end effector move? For a revolute joint the answer is a cross product, and each column of the linear-velocity Jacobian is:</p>
+<div data-tex data-display>\text{column}_i \;=\; \mathbf{z}_{i-1} \times (\mathbf{p}_e - \mathbf{p}_{i-1})</div>
+<div data-tex data-display>J_v =
+\begin{bmatrix}
+\mathbf{z}_0 \times (\mathbf{p}_e - \mathbf{p}_0)
+&amp; \cdots &amp;
+\mathbf{z}_5 \times (\mathbf{p}_e - \mathbf{p}_5)
+\end{bmatrix}</div>
+<p>Where:</p>
+<ul><li><span data-tex>\mathbf{z}_{i-1}</span> is the axis joint <span data-tex>i</span> spins about, which is column 3 of that joint's cumulative transform from Step 1.</li><li><span data-tex>\mathbf{p}_e - \mathbf{p}_{i-1}</span> is the lever arm, the vector reaching from the joint out to the tool.</li></ul>
+<p>The cross product captures the everyday fact that spinning a joint swings the tool in a circle around that joint's axis. The further out the tool sits, the longer the lever arm and the faster it sweeps, and it always moves at a right angle to both the axis and the arm. Stacking one such column per joint gives <span data-tex>J_v</span>, which is <span data-tex>3 \times 6</span>: three rows for the x, y, z of tool velocity, and one column per joint.</p>
+<hr>
+<h2 id="step-4-damped-least-squares-solve">Step 4: Damped Least-Squares Solve</h2>
+<p>The goal is to solve <span data-tex>J_v \Delta\theta = \Delta p</span> for the joint step <span data-tex>\Delta\theta</span>, but in a way that picks one answer out of many and stays stable near singularities.</p>
+<h3 id="why-we-can-t-just-invert">Why we can't just invert</h3>
+<div data-tex data-display>J\,\Delta\theta = \Delta p \quad\Longrightarrow\quad \Delta\theta = J^{-1}\,\Delta p \;\; \color{red}{\times}</div>
+<p>The problem is that <span data-tex>J</span> is a <span data-tex>3 \times 6</span> matrix, so it is not square and has no inverse. There are 3 equations (the x, y, z of the tool) and 6 unknowns (the six joints), so infinitely many different joint motions land the tool in the exact same spot. The arm is redundant, and I have to choose one of those motions.</p>
+<p>To choose, I search only in the slice of joint space the Jacobian actually uses, its row space, by writing the answer as:</p>
+<div data-tex data-display>\Delta\theta = J^{\mathsf{T}} w</div>
+<blockquote>Writing <span data-tex>\Delta\theta = J^{\mathsf{T}} w</span> automatically discards the wasted internal motions and keeps the smallest (minimum-norm) joint step that still does the job. Here <span data-tex>w</span> is a 3-vector I have left to solve for.</blockquote>
+<p>Substituting that back collapses the wide, unsolvable system into a small square one I can actually invert:</p>
+<div data-tex data-display>J(J^{\mathsf{T}} w) = \Delta p \;\Longrightarrow\; (J J^{\mathsf{T}})\,w = \Delta p \;\Longrightarrow\; w = (J J^{\mathsf{T}})^{-1}\,\Delta p</div>
+<div data-tex data-display>\Delta\theta = J^{\mathsf{T}} w = J^{\mathsf{T}} (J J^{\mathsf{T}})^{-1}\,\Delta p \qquad (\text{pseudoinverse})</div>
+<hr>
+<h3 id="algorithm">Algorithm</h3>
+<p><strong>a) Inputs</strong></p>
+<p><span data-tex>J_v</span> comes from Step 3. The task-space step <span data-tex>\Delta p</span> is the error from Step 2 scaled down by a step size <span data-tex>\alpha</span>, so the arm moves a measured fraction of the way on each iteration instead of lunging the whole distance at once:</p>
+<div data-tex data-display>\Delta p = \alpha\, e = 0.5 \begin{bmatrix} \,\cdot\, \\ \,\cdot\, \\ \,\cdot\, \end{bmatrix}</div>
+<p><strong>b) Form the damped normal matrix</strong></p>
+<div data-tex data-display>A = J_v J_v^{\mathsf{T}} + \lambda^2 I \qquad [\,3 \times 3\,], \quad \lambda^2 \approx 0.0025</div>
+<p>Multiplying <span data-tex>J_v</span> by its transpose makes a small <span data-tex>3 \times 3</span> matrix that can be inverted. The <span data-tex>\lambda^2 I</span> term is the damping: near a singularity <span data-tex>J_v J_v^{\mathsf{T}}</span> becomes nearly singular and would produce a very large <span data-tex>\Delta\theta</span>, so adding a little to the diagonal bounds the step at the price of a slightly shorter one.</p>
+<p><strong>c) Solve for <span data-tex>y</span></strong></p>
+<div data-tex data-display>y = A^{-1}\,\Delta p \qquad [3 \times 3][3 \times 1] \Rightarrow [3 \times 1]</div>
+<p><strong>d) Map back to joint space</strong></p>
+<div data-tex data-display>\Delta\theta = J_v^{\mathsf{T}}\, y \qquad [6 \times 3][3 \times 1] \Rightarrow [6 \times 1]</div>
+<p><strong>e) Update the joint angles</strong></p>
+<div data-tex data-display>\theta_{\text{new}} = \theta_{\text{old}} + \Delta\theta</div>
+<hr>
+<h2 id="the-pseudoinverse-moore-penrose-inverse">The Pseudoinverse (Moore-Penrose inverse)</h2>
+<div data-tex data-display>J^{+} = J^{\mathsf{T}} (J J^{\mathsf{T}})^{-1}</div>
+<p>The expression <span data-tex>J^{\mathsf{T}} (J J^{\mathsf{T}})^{-1}</span> that fell out of the solve above is the Moore-Penrose pseudoinverse, written <span data-tex>J^{+}</span>. A few things worth knowing about it:</p>
+<ul><li>It is a generalization of a matrix inverse to matrices that are not square.</li><li>It is used when a system of linear equations <span data-tex>A x = b</span> does not have a unique solution, where it provides the best-fit approximate solution.</li><li>It computes the minimum-norm least-squares solution, the smallest answer that still gets as close as possible.</li></ul>
+<div data-tex data-display>\Delta\theta = J^{\mathsf{T}} (J J^{\mathsf{T}} + \lambda^2 I)^{-1}\,\Delta p</div>
+<figure class="figure"><img src="websiteImages/ur5e/task3_images/task3_demo.gif" alt="Task 3 Demo" loading="lazy"></figure>
+<h2 id="full-jacobian-6x6-implementation">Full Jacobian (6x6) Implementation</h2>
+<p>As mentioned above, the Jacobian matrix used was only a 3x6 Jacobian which only contains information needed for position, not orientation. The following are the differences and additions I made to the algorithm to support the full 6x6 Jacobian matrix.</p>
+<p>Moving from the <span data-tex>3 \times 6</span> to the full <span data-tex>6 \times 6</span> Jacobian adds <strong>orientation</strong> control, so the end-effector is driven to a full target <em>pose</em> (position <strong>and</strong> orientation) instead of just a target point. This changes three things: the error becomes a 6-vector, the Jacobian gains three orientation rows, and the damped least-squares solve grows from <span data-tex>3 \times 3</span> to <span data-tex>6 \times 6</span>. The steps below describe only the differences and additions from the position-only version above.</p>
+<h3 id="step-1-forward-kinematics-addition">Step 1 (Forward Kinematics): addition</h3>
+<p>No new computation is needed here. The orientation <span data-tex>R_e</span> is the top-left <span data-tex>3 \times 3</span> block of <span data-tex>T_0^{\,6}</span>, which was already produced in the original Step 1 but went unused. For the full Jacobian I now keep it:</p>
+<div data-tex data-display>R_e = T_0^{\,6}[\,0\!:\!3,\;0\!:\!3\,]</div>
+<p>Its three columns are the end-effector frame's <span data-tex>\mathbf{x}</span>, <span data-tex>\mathbf{y}</span>, <span data-tex>\mathbf{z}</span> axes expressed in the base frame.</p>
+<h3 id="step-2-error-now-a-6-vector-pose-error">Step 2 (Error): now a 6-vector pose error</h3>
+<p>The error from the original Step 2 becomes the <strong>position</strong> part of a larger error, renamed <span data-tex>e_p</span>:</p>
+<div data-tex data-display>e_p = p_{target} - p_e \qquad [3 \times 1]</div>
+<p>A second <strong>orientation</strong> part <span data-tex>e_o</span> is added. This requires a target orientation <span data-tex>R_d</span> (the desired tool orientation). Because orientations cannot be subtracted, I first compute the rotation that carries the current orientation onto the desired one:</p>
+<div data-tex data-display>R_{err} = R_d\,R_e^{\mathsf{T}} \qquad [3 \times 3]</div>
+<p><span data-tex>R_{err}</span> is a full rotation matrix. Euler's rotation theorem says any rotation, no matter how it is built, is the same as a single turn of some angle <span data-tex>\phi</span> about some axis. Pulling that one axis and angle back out turns the matrix into a rotation vector (axis × angle), the angular analog of <span data-tex>p_{target} - p_e</span>: it points along the axis the tool must twist about, and its length is how far. The angle comes from the trace:</p>
+<div data-tex data-display>\phi = \arccos\!\left(\frac{\mathrm{tr}(R_{err}) - 1}{2}\right)</div>
+<div data-tex data-display>e_o = \frac{\phi}{2\sin\phi}
+\begin{bmatrix}
+R_{err}[3,2] - R_{err}[2,3] \\
+R_{err}[1,3] - R_{err}[3,1] \\
+R_{err}[2,1] - R_{err}[1,2]
+\end{bmatrix}
+\qquad [3 \times 1]</div>
+<p>The position and orientation parts are stacked into a single <span data-tex>6 \times 1</span> pose error, each scaled by its own gain:</p>
+<div data-tex data-display>e =
+\begin{bmatrix}
+K_p\,e_p \\
+K_o\,e_o
+\end{bmatrix}
+\qquad [6 \times 1]</div>
+<p>The two gains are needed because <span data-tex>e_p</span> is in <strong>meters</strong> and <span data-tex>e_o</span> is in <strong>radians</strong>; <span data-tex>K_p</span> and <span data-tex>K_o</span> weight the two so neither dominates the step. (<span data-tex>K_p</span> plays the same role the step size <span data-tex>\alpha = 0.5</span> did in the position-only version.)</p>
+<ul class="doc-refs"><li><a href="https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation" target="_blank" rel="noopener noreferrer">https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation</a></li><li><a href="https://en.wikipedia.org/wiki/Euler%27s_rotation_theorem" target="_blank" rel="noopener noreferrer">https://en.wikipedia.org/wiki/Euler%27s_rotation_theorem</a></li></ul>
+<h3 id="step-3-jacobian-add-the-orientation-rows">Step 3 (Jacobian): add the orientation rows</h3>
+<p>The original <span data-tex>J_v</span> becomes the <strong>top three rows</strong>. I add a second block <span data-tex>J_\omega</span> (the angular-velocity Jacobian) whose columns are simply the joint axes. The reasoning: spinning a revolute joint tumbles the tool about that joint's own axis, so the angular contribution of joint <span data-tex>i</span> is just its axis <span data-tex>\mathbf{z}_{i-1}</span>, with no lever arm and no cross product needed:</p>
+<div data-tex data-display>\text{column}_i \;=\; \mathbf{z}_{i-1}</div>
+<div data-tex data-display>J_\omega =
+\begin{bmatrix}
+\mathbf{z}_0 &amp; \cdots &amp; \mathbf{z}_5
+\end{bmatrix}
+\qquad [3 \times 6]</div>
+<p>Stacking the linear and angular blocks gives the full Jacobian, where each column is the complete twist (slide stacked on tumble) produced by spinning that joint:</p>
+<div data-tex data-display>\text{column}_i \;=\;
+\begin{bmatrix}
+\mathbf{z}_{i-1} \times (\mathbf{p}_e - \mathbf{p}_{i-1}) \\
+\mathbf{z}_{i-1}
+\end{bmatrix}</div>
+<div data-tex data-display>J =
+\begin{bmatrix}
+J_v \\
+J_\omega
+\end{bmatrix}
+\qquad [6 \times 6]</div>
+<p>This <span data-tex>J</span> now maps joint rates to the full end-effector twist (linear velocity <span data-tex>v</span> stacked on angular velocity <span data-tex>\omega</span>):</p>
+<div data-tex data-display>\begin{bmatrix} v \\ \omega \end{bmatrix} = J\,\dot{\theta}
+\qquad [6 \times 1] = [6 \times 6][6 \times 1]</div>
+<h2 id="step-4-damped-least-squares-solve-6x6-same-formula-larger-dimensions">Step 4: Damped Least-Squares Solve (6x6): same formula, larger dimensions</h2>
+<p>The solve is structurally identical to the position-only version; only the dimensions grow.</p>
+<p><strong>a) Inputs</strong></p>
+<p><span data-tex>J</span> is now <span data-tex>6 \times 6</span>, and the task-space error is the full <span data-tex>6 \times 1</span> pose error from Step 2:</p>
+<div data-tex data-display>e =
+\begin{bmatrix}
+K_p\,e_p \\
+K_o\,e_o
+\end{bmatrix}
+\qquad [6 \times 1]</div>
+<p><strong>b) Form the damped normal matrix</strong></p>
+<div data-tex data-display>A = J\,J^{\mathsf{T}} + \lambda^2 I \qquad [\,6 \times 6\,], \quad \lambda^2 \approx 0.0025</div>
+<p><strong>c) Solve for <span data-tex>y</span></strong></p>
+<div data-tex data-display>y = A^{-1}\,e \qquad [6 \times 6][6 \times 1] \Rightarrow [6 \times 1]</div>
+<p><strong>d) Map back to joint space</strong></p>
+<div data-tex data-display>\Delta\theta = J^{\mathsf{T}}\,y \qquad [6 \times 6][6 \times 1] \Rightarrow [6 \times 1]</div>
+<p><strong>e) Update the joint angles</strong></p>
+<div data-tex data-display>\theta_{\text{new}} = \theta_{\text{old}} + \Delta\theta</div>
+<p>Because <span data-tex>J</span> is now square (<span data-tex>6 \times 6</span>), at a non-singular configuration the damped pseudoinverse reduces to the plain inverse <span data-tex>\Delta\theta = J^{-1} e</span>. I keep the <span data-tex>\lambda^2 I</span> damping anyway, since a full-pose target makes the arm pass near wrist and shoulder singularities more often, and the damping is what keeps <span data-tex>\Delta\theta</span> bounded when it does.</p>
+<h3 id="step-5-convergence">Step 5 Convergence</h3>
+<p>Because the error now has two parts in two different units, the stopping test checks each separately:</p>
+<div data-tex data-display>\lVert e_p \rVert &lt; \text{pos\_tol}
+\quad\text{and}\quad
+\lVert e_o \rVert &lt; \text{rot\_tol}</div>
+<p>When both are satisfied, the current <span data-tex>\theta</span> places the end-effector at the full target pose. Otherwise the loop returns to Step 1 and re-linearizes at the updated configuration.</p>
+<h2 id="full-pose-6x6-demo">Full Pose (6x6) Demo</h2>
+<p>The full 6×6 Jacobian driving the end-effector to the target pose (position and orientation):</p>
+<figure class="figure"><img src="websiteImages/ur5e/task3_images/task3_6x6_demo.gif" alt="Task 3 Full Pose Demo" loading="lazy"></figure>
+<h2 id="adding-a-gripper-franka-panda-hand">Adding a Gripper (Franka Panda Hand)</h2>
+<p>So far the IK drives the bare flange (the <code>attachment_site</code> at the tip of <code>wrist_3_link</code>) to the target. To let the arm actually pick up the bottle, I mounted a gripper on the end-effector. The model is the Franka Panda parallel-jaw hand, taken from Google DeepMind's MuJoCo Menagerie.</p>
+<ul class="doc-refs"><li><a href="https://github.com/google-deepmind/mujoco_menagerie/tree/main/franka_emika_panda" target="_blank" rel="noopener noreferrer">https://github.com/google-deepmind/mujoco_menagerie/tree/main/franka_emika_panda</a></li></ul>
+<h3 id="sourcing-the-model">Sourcing the model</h3>
+<p>I started with a Robotiq 3-Finger gripper, but a three-finger hand is hard to close reliably on a round object, and the only source for it was a URDF that needed translating into MJCF by hand. The Panda hand solves both problems. It is already written in MJCF, so it drops straight into <code>ur5e.xml</code>, and it is a simple parallel-jaw design: two fingers on prismatic (slide) joints with flat box pads, the same gripper MuJoCo uses in its own grasping demos. Flat pads squeezing in a straight line grasp far more dependably than three curling fingers.</p>
+<p>Because both models are MJCF, the only conflicts to clear up were shared names. The UR5e and the Panda both define a <code>black</code> material and <code>visual</code> and <code>collision</code> default classes, and MJCF names are global, so the Panda's were renamed to <code>panda_black</code>, <code>panda_visual</code>, and <code>panda_collision</code> to keep the two from colliding.</p>
+<figure class="figure"><img src="websiteImages/ur5e/task3_images/ee_path.png" alt="Task 3 Full Pose Demo" loading="lazy"></figure>
+<h2 id="grabbing-the-bottle">Grabbing the Bottle</h2>
+<p>With the hand mounted, I run a three-phase finite state machine:</p>
+<ul><li><strong>reach</strong>: IK drives the grip point to the bottle. The gripper starts open (<code>data.ctrl[grip_id] = 255</code>; on this actuator <code>255 = open</code>, <code>0 = closed</code>).</li><li><strong>close</strong>: once both <code>e_p</code> and <code>e_o</code> are under tolerance, the gripper closes (<code>data.ctrl[grip_id] = 0</code>) and holds for 2 s so the contact can settle before any motion.</li><li><strong>return</strong>: IK drives the loaded hand back to the home pose.</li></ul>
+<h3 id="aiming-at-the-right-point-on-the-bottle">Aiming at the right point on the bottle</h3>
+<p>The IK solves for a full pose, so the grasp needs both a target <strong>position</strong> and a target <strong>orientation</strong>.</p>
+<p><code>bottle_grasp_target()</code> reads the bottle's bounding box and returns a point a chosen fraction up its height (<code>height_frac</code>), on the central axis. The grip point itself is the flange position pushed forward by a fixed <code>GRIP_OFFSET</code> along the tool's approach axis.</p>
+<p>The target orientation <code>R_d</code> is a side of the bottle grasp: the gripper's approach axis (the tool's local +z, where the fingers point) is aimed horizontally at the bottle (+x), and the jaws close in the horizontal plane:</p>
+<div data-tex data-display>R_d =
+\begin{bmatrix}
+0 &amp; 0 &amp; 1\\
+0 &amp; 1 &amp; 0\\
+-1 &amp; 0 &amp; 0
+\end{bmatrix}</div>
+<h3 id="problem-the-bottle-kept-slipping-out">Problem: the bottle kept slipping out</h3>
+<p>The first attempts grasped fine while stationary but lost the bottle as soon as the arm moved. There were three separate issues:</p>
+<p><strong>1. Grasp height.</strong> Grabbing high on the bottle (near the top/neck) puts the grip far above the center of mass, so gravity hangs the whole bottle off the contact as a pendulum and pivots it loose. Gripping nearer the wide body, close to the center of mass, removes that lever arm.</p>
+<p><strong>2. Contact friction.</strong> The fingertip pads defaulted to <code>condim=3</code> (sliding friction only) with <code>μ = 1.0</code>, so nothing resisted the bottle twisting in the jaws. The pad collision class now uses <code>condim=6</code> (adds torsional + rolling friction), <code>friction="5.0 0.2 0.01"</code>, and <code>priority="2"</code> so the contact takes the grippy pad values instead of combining with the bottle's lower defaults.</p>
+<p><strong>3. Grip force</strong> Even with high friction the bottle still crept loose, because friction force is <code>μ × N</code> and the squeeze force <code>N</code> was small. The Panda gripper is a position servo, and on a thin object the fingers nearly close, so the position error is very small: the contact normal force measured only <strong>~0.9 N</strong>, against a bottle weight of <code>0.4 kg × 9.81 ≈ 3.9 N</code>. The fix was to stiffen the servo by scaling its gain and position bias together by 10×, and to cap <code>forcerange</code> at the real Franka Hand spec of ±140 N tendon force (~ 70 N per jaw):</p>
+<pre><code class="lang-xml">&lt;general class="panda" name="gripper" tendon="split" forcerange="-140 140" ctrlrange="0 255"
+  gainprm="0.1568627451 0 0" biasprm="0 -1000 -100"/&gt;</code></pre>
+<p>After stiffening, the same grasp holds the bottle with <strong>~14 N per jaw</strong> (well under the 70 N ceiling, so it never saturates), and the contact normal force rises from ~0.9 N to ~9 N. With ~14 N of squeeze and <code>μ = 5.0</code>, the available holding force is far above the bottle's weight, and it no longer slips during the reach, lift, or return.</p>
+<figure class="figure"><img src="websiteImages/ur5e/task3_images/gripper_bottle.gif" alt="Bottle Grasp Demo" loading="lazy"></figure>
+                </article>
+            </div>
+
+            <nav class="doc-footnav" aria-label="Other writeups">
+                <a href="ur5e-task1.html" class="doc-footlink"><span class="mono doc-footlink-num">TASK 01</span><span class="mono doc-footlink-title">Joint Control &rarr;</span></a>
+                <a href="ur5e-task2.html" class="doc-footlink"><span class="mono doc-footlink-num">TASK 02</span><span class="mono doc-footlink-title">Trajectory Tracking &rarr;</span></a>
+            </nav>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-inner">
+            <span class="mono footer-text">Saejoon Park &copy; 2025</span>
+            <span class="mono footer-sep">&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;</span>
+            <span class="mono footer-text">ECE @ Cornell University</span>
+        </div>
+    </footer>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+    <script src="script.js"></script>
+    <script defer src="docs.js"></script>
+</body>
+</html>
