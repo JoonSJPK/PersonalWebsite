@@ -1,0 +1,157 @@
+%==============================================================
+% Saejoon Park - Resume (one page)
+% Compile with: pdflatex Park_Saejoon_Resume.tex
+%==============================================================
+\documentclass[letterpaper,10pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{times}
+\usepackage[
+  top=0.4in, bottom=0.35in, left=0.5in, right=0.5in
+]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{tabularx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\usepackage{microtype}
+
+% blue clickable link
+\definecolor{linkblue}{HTML}{1155CC}
+\newcommand{\bluelink}[2]{\href{#1}{\textcolor{linkblue}{\underline{#2}}}}
+
+% --- global spacing -----------------------------------------
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\tabcolsep}{0pt}
+\raggedbottom
+\raggedright
+
+% --- section headings ---------------------------------------
+\titleformat{\section}
+  {\normalsize\bfseries\scshape}
+  {}{0em}{}[\vspace{-6pt}\rule{\textwidth}{0.6pt}]
+\titlespacing*{\section}{0pt}{6pt}{1pt}
+
+% --- helpers ------------------------------------------------
+% \entry{left bold}{left plain}{right}
+\newcommand{\entry}[3]{%
+  \begin{tabularx}{\textwidth}{@{}X r@{}}
+    \textbf{#1}#2 & #3
+  \end{tabularx}\par
+}
+
+\newenvironment{bullets}
+  {\begin{itemize}[leftmargin=11pt,labelsep=4pt,topsep=2pt,partopsep=0pt,
+                   parsep=0pt,itemsep=1pt,label=\textbullet,
+                   after=\vspace{4pt}]}
+  {\end{itemize}}
+
+%==============================================================
+\begin{document}
+
+%--------------------- HEADER ---------------------------------
+\begin{center}
+  {\LARGE\bfseries Saejoon Park}\\[3pt]
+  Fairfax, VA $|$ (571)-373-7778 $|$
+  \href{mailto:park.p.saejoon@gmail.com}{park.p.saejoon@gmail.com} $|$
+  \bluelink{https://joonsjpk.github.io/PersonalWebsite/}{Portfolio} $|$
+  \bluelink{https://github.com/JoonSJPK}{GitHub} $|$ US Citizen
+\end{center}
+\vspace{-4pt}
+
+%--------------------- EDUCATION ------------------------------
+\section{Education}
+\entry{Cornell University}{ $|$ Ithaca, NY}{Aug 2024 -- May 2028}
+Bachelor of Science in Electrical and Computer Engineering (Robotics Concentration)
+
+%--------------------- SKILLS ---------------------------------
+\section{Skills}
+\textbf{Programming Languages:} Python, C, C++, Swift\\
+\textbf{Software/Platforms:} KiCad, LTSpice, MuJoCo, Fusion360, Git/GitHub, Claude Code\\
+\textbf{Languages:} English (fluent), Korean (fluent)
+
+%--------------------- EXPERIENCE -----------------------------
+\section{Experience}
+
+\entry{Wim Robotics}{ $|$ Robotics Engineering Intern}{May 2026 -- Present}
+\begin{bullets}
+  \item Designing an \textbf{Analog Neural Network}, a learned mixed-signal actuator controller: a
+        continuous-time recurrent neural network (3 inputs, 4 hidden states, 1 torque output) in analog
+        hardware computing nonlinear inverse dynamics as current-mode feedforward, closed by a digital ADRC
+        loop with an extended state observer, targeting high-precision control inside tight SWaP budgets,
+        applicable to platforms such as CubeSats.
+  \item Laid out the full KiCad schematic and PCB: 64 digital potentiometers across the $4\times3$ input and
+        $4\times4$ recurrent crossbars, signed weight pairs about a mid-supply rail, op-amp $\sigma$ and
+        integrator blocks, and 8 daisy-chained 74HC595 shift registers driving every weight from 3 RP2040
+        pins on one latch edge.
+  \item Built a \textbf{UR5e} control stack in MuJoCo: torque-level PID joint control tuned by an ITAE gain
+        sweep, trapezoidal-velocity trajectory tracking with feedforward, and Jacobian-based inverse
+        kinematics driving the end effector to a target pose to grasp an object.
+\end{bullets}
+
+\entry{IBX LLC}{ $|$ Co-Founder / COO $|$ Ithaca, NY}{Mar 2025 -- Present}
+\begin{bullets}
+  \item \textbf{Oddity 1 Chrome Extension:} used the chenglou/pretext JS library, the Google Docs API, and HEX
+        color tracking to enable on-screen GDocs annotations (previously impossible without a Google whitelist),
+        solving \texttt{<canvas>} rendering difficulties.
+  \item Developed a ``Cursor for Writing'' system in Google Docs from a clean-room rewrite of open-source
+        Claude Code.
+  \item Frontend Developer / Outreach: working with the FCPS CTIO and Director of Counseling for district
+        app approval.
+\end{bullets}
+
+\entry{Cornell Machine Poetics Research}{ $|$ Advisor: Sang Leigh $|$ Ithaca, NY}{Nov 2025 -- Apr 2026}
+\begin{bullets}
+  \item \textbf{Political AI Camera:} developed Raspberry Pi hardware around a 12.1 MP sensor with software
+        built on the Picamera2 library.
+  \item Calls the OpenAI API (\texttt{gpt-image-1}) prompted to re-render a captured image from differing
+        political perspectives.
+\end{bullets}
+
+\entry{Cornell Assistive Technologies Project Team}{ $|$ Ithaca, NY}{Feb 2025 -- Apr 2026}
+\begin{bullets}
+  \item \textbf{Sensory Overload Wearable:} developing a custom PCB for a lap wearable accommodating individuals
+        with sensory processing disorder.
+\end{bullets}
+
+%--------------------- PROJECTS -------------------------------
+\section{Projects}
+
+\entry{Computer Vision + Glove-Based Tracking Computer Mouse}{ $|$ Ithaca, NY}{Jan 2025}
+\begin{bullets}
+  \item ATMega32U4, custom conductive inputs, and an IMU assembled into a position-tracking glove device
+        (Valorant compatible).
+  \item OpenCV hand-gesture tracking (simulated clicks / volume control) at 30 fps.
+\end{bullets}
+
+\entry{Digital MIDI Trumpet}{ $|$ Ithaca, NY}{July 2026 -- Present}
+\begin{bullets}
+  \item Built an electronic MIDI trumpet around an RP2040 microcontroller: three valve buttons, capacitive
+        touch pads for breath, and a motion sensor that shifts the pitch as the player raises or lowers the bell.
+  \item Designed all three circuit boards in KiCad, shrinking the touch sensor board by 59\%.
+\end{bullets}
+
+\entry{Thermal Electric Generator Powered Mouse}{ $|$ Fairfax, VA}{Aug 2023}
+\begin{bullets}
+  \item Patent-pending hand thermal energy-powered computer mouse.
+  \item Implemented TEG modules and a transformer to convert a 20 mV output from TEG to 3.3 V.
+\end{bullets}
+
+\entry{Audio Signal Decoding Circuit \& Filter Design}{ $|$ Ithaca, NY}{Apr 2026}
+\begin{bullets}
+  \item Designed and built a 6th-order MFB bandpass filter to extract encoded audio secrets; ran automated
+        frequency-response sweeps and safely eliminated multi-volt DC offsets.
+\end{bullets}
+
+\entry{Steel Electric Bike from Scratch}{ $|$ Burke, VA}{May 2025 -- Aug 2025}
+\begin{bullets}
+  \item Custom-cut and assembled steel chassis; 1000 W motor; 50 V accumulator.
+\end{bullets}
+
+%--------------------- HONORS ---------------------------------
+\section{Honors}
+\entry{USPTO Provisional Patent}{ for TEG Hot Swap Computer Mouse}{Fall 2023}
+
+\end{document}
