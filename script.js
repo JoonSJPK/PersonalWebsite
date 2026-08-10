@@ -210,11 +210,60 @@ const projectDetails = {
 };
 
 /* ──────────────────────────────────────────────
+   TOUCH / SCROLL-LOCK HELPERS
+────────────────────────────────────────────── */
+
+/* True on phones and tablets — anything with no real hover and a coarse
+   pointer. Used to skip the custom cursor and to enable swipe gestures. */
+const isTouch = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+
+/* Locking the body requires `position: fixed` on iOS, which resets the scroll
+   position — so stash it and put it back on unlock. Reference-counted, because
+   the lightbox opens on top of the project modal. */
+let scrollLockDepth = 0;
+let scrollLockY = 0;
+
+function lockScroll() {
+    if (scrollLockDepth++ > 0) return;
+    scrollLockY = window.scrollY;
+    document.body.style.top = `-${scrollLockY}px`;
+    document.body.classList.add('scroll-locked');
+}
+
+function unlockScroll() {
+    if (scrollLockDepth === 0 || --scrollLockDepth > 0) return;
+    document.body.classList.remove('scroll-locked');
+    document.body.style.top = '';
+    window.scrollTo(0, scrollLockY);
+}
+
+/* Horizontal swipe detection for the lightbox. Ignores gestures that are
+   mostly vertical (a scroll attempt) or too short to be deliberate. */
+function onSwipe(el, { onLeft, onRight }) {
+    let x0 = null, y0 = null;
+
+    el.addEventListener('touchstart', e => {
+        if (e.touches.length !== 1) { x0 = null; return; }
+        x0 = e.touches[0].clientX;
+        y0 = e.touches[0].clientY;
+    }, { passive: true });
+
+    el.addEventListener('touchend', e => {
+        if (x0 === null) return;
+        const dx = e.changedTouches[0].clientX - x0;
+        const dy = e.changedTouches[0].clientY - y0;
+        x0 = null;
+        if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+        (dx < 0 ? onLeft : onRight)();
+    }, { passive: true });
+}
+
+/* ──────────────────────────────────────────────
    CUSTOM CURSOR
 ────────────────────────────────────────────── */
 function initCursor() {
     const dot = document.getElementById('cursor-follower');
-    if (!dot) return;
+    if (!dot || isTouch) return;
 
     document.addEventListener('mousemove', e => {
         dot.style.left = e.clientX + 'px';
@@ -295,7 +344,16 @@ function initAsciiCanvas() {
         animId = requestAnimationFrame(draw);
     }
 
-    window.addEventListener('resize', resize);
+    // On mobile/tablet the address bar collapsing fires `resize` mid-scroll;
+    // rebuilding every particle then would stutter, so only react to real
+    // width changes (rotation, desktop window resize).
+    let lastW = 0;
+    window.addEventListener('resize', () => {
+        if (window.innerWidth === lastW) return;
+        lastW = window.innerWidth;
+        resize();
+    });
+    lastW = window.innerWidth;
     resize();
     animId = requestAnimationFrame(draw);
 
@@ -442,18 +500,34 @@ function initMobileNav() {
     const menu   = document.getElementById('navLinks');
     if (!burger || !menu) return;
 
-    burger.addEventListener('click', () => {
-        const open = menu.classList.toggle('active');
+    function setOpen(open) {
+        menu.classList.toggle('active', open);
         burger.classList.toggle('active', open);
         burger.setAttribute('aria-expanded', String(open));
+    }
+
+    burger.addEventListener('click', e => {
+        e.stopPropagation();
+        setOpen(!menu.classList.contains('active'));
     });
 
     menu.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', () => {
-            menu.classList.remove('active');
-            burger.classList.remove('active');
-            burger.setAttribute('aria-expanded', 'false');
-        });
+        link.addEventListener('click', () => setOpen(false));
+    });
+
+    // Tapping anywhere else, or hitting Escape, dismisses the drawer.
+    document.addEventListener('click', e => {
+        if (menu.classList.contains('active') && !menu.contains(e.target)) setOpen(false);
+    });
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') setOpen(false);
+    });
+
+    // Rotating to landscape can cross the breakpoint that hides the burger,
+    // which would otherwise strand the drawer open over the desktop nav.
+    window.matchMedia('(min-width: 769px)').addEventListener('change', e => {
+        if (e.matches) setOpen(false);
     });
 }
 
@@ -573,13 +647,13 @@ function openProject(projectId) {
         </div>`;
 
     document.body.appendChild(modal);
+    lockScroll();
 
     requestAnimationFrame(() => requestAnimationFrame(() => modal.classList.add('open')));
 
     // Wire gallery image clicks → lightbox
     if (project.images.length) {
         modal.querySelectorAll('.terminal-gallery img').forEach((img, idx) => {
-            img.style.cursor = 'none';
             img.addEventListener('click', () => openLightbox(project.images, idx));
         });
     }
@@ -594,8 +668,12 @@ function openProject(projectId) {
         });
     });
 
+    let closed = false;
     function close() {
+        if (closed) return;
+        closed = true;
         modal.classList.remove('open');
+        unlockScroll();
         setTimeout(() => modal.remove(), 320);
         document.removeEventListener('keydown', onKey);
     }
@@ -634,6 +712,7 @@ function openLightbox(images, startIndex) {
 
     document.body.appendChild(lb);
     document.body.classList.add('lightbox-open');
+    lockScroll();
     requestAnimationFrame(() => requestAnimationFrame(() => lb.classList.add('open')));
 
     const img     = lb.querySelector('.lb-img');
@@ -665,10 +744,14 @@ function openLightbox(images, startIndex) {
     function prev() { if (current > 0) { current--; update(); } }
     function next() { if (current < images.length - 1) { current++; update(); } }
 
+    let closed = false;
     function close() {
+        if (closed) return;
+        closed = true;
         lb.classList.remove('open');
         document.body.classList.remove('lightbox-open');
         dot?.classList.remove('hovering');
+        unlockScroll();
         setTimeout(() => lb.remove(), 220);
         document.removeEventListener('keydown', onKey);
     }
@@ -685,6 +768,9 @@ function openLightbox(images, startIndex) {
     // Click backdrop (not the image inner) to close
     lb.addEventListener('click', e => { if (e.target === lb) close(); });
     document.addEventListener('keydown', onKey);
+
+    // Swipe left/right through the gallery on touch.
+    if (isTouch) onSwipe(lb, { onLeft: next, onRight: prev });
 }
 
 /* ──────────────────────────────────────────────

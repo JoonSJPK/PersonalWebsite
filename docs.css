@@ -51,7 +51,7 @@
     width: 100%;
     max-width: var(--max-w);
     margin: 0 auto;
-    padding: 0 2rem;
+    padding: 0 var(--pad);
 }
 
 /* ── Title block ── */
@@ -99,7 +99,7 @@
 .doc-toc {
     position: sticky;
     top: calc(var(--nav-h) + 2.5rem);
-    max-height: calc(100vh - var(--nav-h) - 5rem);
+    max-height: calc(100dvh - var(--nav-h) - 5rem);
     overflow-y: auto;
     padding-right: 0.5rem;
     border-left: 1px solid var(--border);
@@ -143,6 +143,9 @@
 /* ── Body copy ── */
 .doc-body {
     max-width: 74ch;
+    /* Grid/flex items floor at min-content by default; wide code, tables and
+       math would otherwise push the whole column past the viewport. */
+    min-width: 0;
     font-family: var(--serif);
     font-size: 1.045rem;
     line-height: 1.78;
@@ -273,6 +276,7 @@
     border-left: 2px solid var(--accent);
     padding: 1rem 1.15rem;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .doc-body pre code {
@@ -292,6 +296,8 @@
 /* ── Tables ── */
 .doc-body .table-wrap {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
     border: 1px solid var(--border);
 }
 
@@ -451,7 +457,7 @@
 /* ── Responsive ── */
 @media (max-width: 900px) {
     .doc-layout {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         gap: 2rem;
     }
 
@@ -476,11 +482,74 @@
     .doc-toc-label { padding-left: 0; }
 }
 
+@media (max-width: 900px) {
+    /* Horizontal TOC rows need real height to be tappable. */
+    .doc-toc li a { padding: 0.72rem 0; }
+    .doc-toc ul { gap: 0 1.25rem; }
+}
+
+@media (max-width: 768px) {
+    /* style.css turns .nav-links into a hamburger drawer at this width, but the
+       writeup pages have no hamburger — keep their links in the bar. */
+    .doc-header .nav-links {
+        position: static;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        width: 100%;
+        max-height: none;
+        overflow: visible;
+        border-bottom: none;
+        padding: 0;
+        justify-content: space-between;
+        gap: 0.2rem;
+    }
+
+    /* The four links only fit on one row without the brand mark — and
+       "[← PROJECTS]" already leads home, so the mark is redundant here. */
+    .doc-header .nav-brand { display: none; }
+
+    .doc-header .nav-link {
+        display: block;
+        padding: 0.7rem 0;
+        font-size: 0.6rem;
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+    }
+
+    .doc-header .nav { height: auto; }
+}
+
 @media (max-width: 640px) {
-    .doc-container { padding: 0 1.25rem; }
     .doc-main { padding: 2.5rem 0 3.5rem; }
     .doc-body { font-size: 1rem; }
-    .doc-body h2 { margin-top: 2.6rem; }
-    .doc-header .nav-links { gap: 0.7rem; }
-    .doc-header .nav-link { font-size: 0.6rem; }
+    .doc-body h2 { margin-top: 2.6rem; font-size: 1.15rem; }
+    .doc-body h3 { font-size: 0.88rem; }
+
+    /* A long identifier in nowrap inline code would otherwise widen the page. */
+    .doc-body code { white-space: normal; overflow-wrap: anywhere; }
+    .doc-body pre code { white-space: pre; }
+
+    .doc-body pre { padding: 0.85rem 0.9rem; }
+    .doc-body pre code { font-size: 0.72rem; }
+
+    .doc-body figure { padding: 0.4rem; margin: 1.5rem 0; }
+    .doc-body figure.figure-grid { grid-template-columns: 1fr; }
+
+    .doc-body table { font-size: 0.7rem; }
+    .doc-body th,
+    .doc-body td { padding: 0.5rem 0.65rem; }
+
+    .doc-titleblock { margin-bottom: 2rem; padding: 1.2rem 0 1.4rem; }
+    .doc-blurb { font-size: 0.95rem; }
+
+    .doc-footnav { grid-template-columns: 1fr; margin-top: 3rem; }
+
+    .doc-placeholder-art { font-size: 0.58rem; }
+
+    /* Reference lists are nothing but links — give each one a tappable row. */
+    .doc-body .doc-refs li a {
+        display: inline-block;
+        padding: 0.4rem 0;
+    }
 }
