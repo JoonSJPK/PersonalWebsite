@@ -138,11 +138,11 @@ const projectDetails = {
         technologies: ['Steel Fabrication', 'Motor Control', 'Electronics', 'Mechanical Design'],
         features: ['> Custom-cut steel chassis', '> 1000W motor + 50V accumulator', '> Custom rear axle hub', '> Custom cut, screwed, and fitted by hand'],
         images: [
-            'websiteImages/eBike/IMG_2883.png',
+            'websiteImages/eBike/IMG_2917.png',
             'websiteImages/eBike/IMG_2891.png',
             'websiteImages/eBike/IMG_2904.png',
             'websiteImages/eBike/IMG_2911.png',
-            'websiteImages/eBike/IMG_2917.png',
+            'websiteImages/eBike/IMG_2883.png',
             'websiteImages/eBike/IMG_2922.png',
             'websiteImages/eBike/IMG_2983 2.png',
             'websiteImages/eBike/IMG_3185.png',
@@ -172,11 +172,11 @@ const projectDetails = {
         technologies: ['Thermoelectric Design', 'Power Management', 'Transformer', 'Electronics'],
         features: ['> Patent Pending design', '> TEG modules harvest hand heat', '> Transformer: 20mV → 3.3V', '> Fully battery-free operation'],
         images: [
-            'websiteImages/TEGMouse/1000029237.JPG',
+            'websiteImages/TEGMouse/1000029353.JPG',
             'websiteImages/TEGMouse/1000029238.JPG',
             'websiteImages/TEGMouse/1000029340.JPG',
             'websiteImages/TEGMouse/1000029343.JPG',
-            'websiteImages/TEGMouse/1000029353.JPG',
+            'websiteImages/TEGMouse/1000029237.JPG',
             'websiteImages/TEGMouse/1000030169.JPG'
         ]
     },
