@@ -6,7 +6,8 @@
 const projectDetails = {
     project_analog_nn: {
         title: 'Analog Neural Network',
-        description: 'A mixed-signal attitude controller for CubeSats. A continuous-time recurrent neural network built in analog hardware computes the nonlinear inverse dynamics on the feedforward path, closed by a digital ADRC loop cheap enough to run on the microcontroller a CubeSat already carries — buying model-based pointing precision inside a CubeSat power budget.',
+        affiliation: 'Wim Robotics — Summer Research Collaborator. Worked closely with the CEO and CTO, from problem framing through control-architecture and hardware design reviews.',
+        description: 'A mixed-signal attitude controller compatible with satellite applications, where power and thermal budgets rule out model-based control. A continuous-time recurrent neural network built in analog hardware computes the nonlinear inverse dynamics on the feedforward path, closed by a digital ADRC loop cheap enough to run on the microcontroller such a platform already carries — buying model-based pointing precision inside a tight power budget.',
         technologies: ['KiCad', 'Analog Design', 'CTRNN', 'ADRC', 'RP2040', 'Mixed-Signal'],
         features: [
             '> Continuous-time recurrent net: 3 inputs, 4 hidden states, 1 torque output',
@@ -25,11 +26,12 @@ const projectDetails = {
             'websiteImages/analog_nn/torque_stage.png'
         ],
         docs: [
-            { tag: 'DRAFT', title: 'Full writeup — coming soon', href: 'analog-nn-writeup.html' }
+            { tag: 'WRITEUP 01', title: 'The Analog Network', href: 'analog-nn-writeup.html' }
         ]
     },
     project_ur5e: {
         title: 'UR5e Control Project',
+        affiliation: 'Wim Robotics — Summer Research Collaborator. Worked closely with the CEO and CTO, from problem framing through control-architecture and hardware design reviews.',
         description: 'Simulated control of a Universal Robots UR5e arm in MuJoCo — a custom torque-controlled PID joint controller tuned by an ITAE sweep, joint-space trajectory tracking with command feedforward, and Jacobian-based inverse kinematics that drives the end-effector to a full target pose and grasps a bottle.',
         technologies: ['MuJoCo', 'Python', 'NumPy', 'Control Theory', 'Robotics', 'Fusion360'],
         features: [
@@ -621,6 +623,13 @@ function openProject(projectId) {
                 </div>`
         : '';
 
+    const affilHTML = project.affiliation
+        ? `<div class="terminal-section">
+                    <span class="terminal-key">// AFFILIATION</span>
+                    <p class="terminal-value">${project.affiliation}</p>
+                </div>`
+        : '';
+
     modal.innerHTML = `
         <div class="modal-terminal">
             <div class="terminal-titlebar">
@@ -630,6 +639,7 @@ function openProject(projectId) {
             <div class="terminal-body">
                 ${galleryHTML}
                 ${videosHTML}
+                ${affilHTML}
                 <div class="terminal-section">
                     <span class="terminal-key">// DESCRIPTION</span>
                     <p class="terminal-value">${project.description}</p>

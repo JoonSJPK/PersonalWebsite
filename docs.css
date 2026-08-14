@@ -70,6 +70,15 @@
     margin-bottom: 1rem;
 }
 
+/* The role a writeup's project came out of, sat between eyebrow and title. */
+.doc-affil {
+    display: block;
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+    margin: -0.6rem 0 0.9rem;
+}
+
 .doc-title {
     font-size: clamp(2rem, 6vw, 3.4rem);
     font-weight: 500;

@@ -693,6 +693,16 @@ ul { list-style: none; }
     transition: color 0.2s;
 }
 
+/* Where a project came out of a role, the affiliation sits tight under the
+   title rather than taking the card's full 0.8rem stack gap. */
+.project-affil {
+    display: block;
+    margin-top: -0.5rem;
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+}
+
 .project-entry:hover .project-title {
     color: var(--accent);
 }
@@ -736,10 +746,29 @@ ul { list-style: none; }
 }
 
 .project-docs-label {
-    font-size: 0.6rem;
-    letter-spacing: 0.2em;
-    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
     width: 100%;
+    margin-top: 0.35rem;
+    font-size: 0.64rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    color: var(--text);
+}
+
+/* A hairline carries the label the rest of the way across the card, so the
+   writeup links read as their own block rather than trailing off the tags. */
+.project-docs-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+    transition: background 0.22s;
+}
+
+.project-entry:hover .project-docs-label::after {
+    background: var(--text);
 }
 
 .project-doc-link {

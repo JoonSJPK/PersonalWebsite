@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#F8F7F5">
     <title>Analog Neural Network &mdash; Writeup &mdash; Saejoon Park</title>
-    <meta name="description" content="Writeup for the analog neural network CubeSat attitude controller — in progress.">
+    <meta name="description" content="A mixed-signal attitude controller compatible with satellite applications: an analog continuous-time recurrent neural network on the feedforward path, closed by a digital ADRC loop.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="docs.css">
 </head>
@@ -24,32 +25,296 @@
                 <li><a href="index.html#projects" class="nav-link mono">[&larr; PROJECTS]</a></li>
             </ul>
         </nav>
+        <div class="doc-progress" id="docProgress" aria-hidden="true"></div>
     </header>
 
     <main class="doc-main">
         <div class="doc-container">
             <div class="doc-titleblock">
                 <span class="doc-eyebrow mono">ANALOG NEURAL NETWORK &mdash; WRITEUP</span>
-                <h1 class="doc-title mono">Coming Soon</h1>
-                <p class="doc-blurb newsreader">A mixed-signal attitude controller for CubeSats &mdash; an analog neural network on the feedforward path, closed by a digital ADRC loop.</p>
+                <span class="doc-affil mono">WIM ROBOTICS &middot; SUMMER RESEARCH COLLABORATOR</span>
+                <h1 class="doc-title mono">Analog Neural Network</h1>
+                <p class="doc-blurb newsreader">A mixed-signal attitude controller compatible with satellite applications &mdash; a continuous-time recurrent network computed by resistors and op-amps on the feedforward path, closed by a digital ADRC loop.</p>
             </div>
 
-            <div class="doc-placeholder">
-                <pre class="doc-placeholder-art mono" aria-hidden="true">
-&#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;
-&#x2502;                                      &#x2502;
-&#x2502;  &gt; STATUS    DRAFT IN PROGRESS       &#x2502;
-&#x2502;  &gt; SOURCE    analog_NN_docs.md       &#x2502;
-&#x2502;                                      &#x2502;
-&#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;</pre>
+            <div class="doc-layout">
+                <aside class="doc-toc" aria-label="Table of contents">
+                    <span class="doc-toc-label mono">// CONTENTS</span>
+                    <ul>
+                        <li class="toc-l2"><a href="#introduction-and-motivation" class="mono">Introduction and Motivation</a></li>
+                        <li class="toc-l2"><a href="#the-swap-bottleneck" class="mono">The SWaP Bottleneck</a></li>
+                        <li class="toc-l2"><a href="#general-setup-overview" class="mono">General Setup Overview</a></li>
+                        <li class="toc-l2"><a href="#input" class="mono">Input</a></li>
+                        <li class="toc-l2"><a href="#analog-neural-network" class="mono">Analog Neural Network</a></li>
+                        <li class="toc-l3"><a href="#stage-1-input-projection" class="mono">Stage 1 Input Projection</a></li>
+                        <li class="toc-l3"><a href="#stage-2-recurrent-projection" class="mono">Stage 2 Recurrent Projection</a></li>
+                        <li class="toc-l3"><a href="#stage-3-pre-activation" class="mono">Stage 3 Pre-activation</a></li>
+                        <li class="toc-l3"><a href="#stage-4-nonlinearity" class="mono">Stage 4 Nonlinearity</a></li>
+                        <li class="toc-l3"><a href="#stage-5-integration" class="mono">Stage 5 Integration</a></li>
+                        <li class="toc-l3"><a href="#stage-6-output" class="mono">Stage 6 Output</a></li>
+                        <li class="toc-l3"><a href="#final-formulation" class="mono">Final formulation</a></li>
+                        <li class="toc-l2"><a href="#references" class="mono">References</a></li>
+                    </ul>
+                </aside>
 
-                <p class="doc-placeholder-text newsreader">
-                    The full writeup &mdash; the CTRNN formulation, the potentiometer crossbars,
-                    the shift-register weight path, and the five-controller comparison against
-                    digital PID and ADRC &mdash; is still being written. It will be published here.
-                </p>
+                <article class="doc-body">
+<h2 id="introduction-and-motivation">Introduction and Motivation</h2>
+<p>One small size Satellites like CubeSat, performance in control tasks such as Earth observation, optical downlink, and formation flying depend on precise and accurate pointing. In CubeSat Specifically, the performance of these pointing tasks are limited by power and thermal budget constraints. Power generation on these small platforms is constrained by the limited surface area available for solar cells (Weston et al., 2025).</p>
+<p>Heat produced in vacuum is very difficult for small spacecrafts that only weigh a few kilograms when the only path for heat dissipation is through radiation. NASA's small-spacecraft thermal energy balance shows this clearly: <span data-tex>q_{\text{solar}} + q_{\text{albedo}} + q_{\text{planetshine}} + Q_{\text{gen}} = Q_{\text{stored}} + Q_{\text{out,rad}}</span>, the only outbound path is <span data-tex>Q_{\text{out,rad}}</span>, heat emitted via radiation, and its magnitude depends on "the surface area designated as radiator space" (Weston et al., 2025, ch. 7). This becomes a problem when Radiation-hardened digital processors capable of running high-bandwidth model-based control (H-infinity, LQR, or model predictive control) draw watts of power. On a spacecraft measured in units of 10 cm, that area is small. Some common solutions to this Size, Weight, and Power (SWaP) bottleneck is using lightweight PID controllers that run at only tens to hundreds of hertz. This leaves precision and control performance on the table.</p>
+<p>In advanced and thermally expensive controllers, the main computational expense comes from the nonlinear inverse-dynamics computations. My proposed solution is to offload this to a feedforward analog neural network that computes it as continuous time, current mode operations through analog in-memory computing. This process allows the multiply-accumulate to be performed by the physics of an array of resistors rather than by arithmetic instructions (Mannocci et al., 2026). This open-loop system is then closed with a digital Active Disturbance Rejection Controller (ADRC) and its Extended State Observer (ESO), which is cheap enough to run on the microcontroller a CubeSat already carries (Han, 2009, as cited in Herbst, 2013). The main question this experiment answers is whether a mixed-signal control architecture (learned analog feedforward path then closed by a digital ADRC loop) can deliver high precision and robust attitude control while keeping within the power and thermal budgets of CubeSat sized satellites, without measuring the spacecraft's dynamics in advance.</p>
+<p>To answer this, five controllers will be compared: a tuned digital PID, representing the low-power controller a CubeSat runs today; the analog neural network alone, run open-loop to show that feedforward without any feedback drifts off and cannot stand on its own as a controller; the analog neural network closed with a simple digital PID, which isolates how much the feedforward alone contributes with a conventional feedback loop; the proposed analog neural network closed with digital ADRC; and an idealized digital ADRC handed the exact plant model, included as a best-case upper bound. Comparing PID to NN + PID isolates the benefit of the analog feedforward, while comparing NN + PID to NN + ADRC isolates the benefit the ESO adds on top.</p>
+<h2 id="the-swap-bottleneck">The SWaP Bottleneck</h2>
+<ul><li>Power and Heat: Advanced digital controllers need watts of compute. Because a CubeSat's thermal path in a vacuum is only through radiation, heat is very expensive to dissipate, and the radiating area available scales with a body measured in units of 10 cm (Weston et al., 2025, ch. 7).</li><li>Loop Rate: a low power processor running a PID controller at tens to low hundred of Hertz, caps how fast disturbances can be rejected.</li><li>Model Fragility: Model based controls degrade when parameters drift and do not perform with less precise models. ADRC maintains robustness even against unmodeled dynamics and external disturbances; because it lumps all modeling error into one estimated signal, only a very coarse process model is needed to design the loop (Herbst, 2013).</li></ul>
+<h2 id="general-setup-overview">General Setup Overview</h2>
+<figure class="figure"><img src="websiteImages/analog_nn/docs_images/analog_NN_diagram.png" alt="Complete analog_NN diageram" loading="lazy"></figure>
+<figure class="figure"><img src="websiteImages/analog_nn/docs_images/analog_NN.png" alt="Complete analog_NN schematic" loading="lazy"></figure>
+<p><em>The complete board. Reading left to right: the three input channels and their inverters, the two potentiometer crossbars (<span data-tex>W_{ih}</span> above, <span data-tex>W_{hh}</span> below), the four <span data-tex>\sigma</span> blocks and integrators along the bottom, the output weight stage and torque summing amplifier in the center, and on the right the RP2040, its flash and USB-C interface, and the eight 74HC595 shift registers that carry weight code words to all 64 potentiometers.</em></p>
+<figure class="figure"><img src="websiteImages/analog_nn/docs_images/shift_registers.png" alt="Shift register chain" loading="lazy"></figure>
+<p><em>The weight-loading path. Eight 74HC595 registers are daisy-chained through <code>QH'</code> into <code>SER</code>, giving 64 outputs from three microcontroller pins (<code>ser</code>, <code>SRCLK</code>, <code>RCLK</code>). The top row addresses the positive leg of each signed weight pair and the bottom row the negative leg; <code>RCLK</code> is common to all eight, so every weight on the board updates on the same edge rather than rippling in one at a time.</em></p>
+<h2 id="input">Input</h2>
+<p>The feedforward network is driven by the commanded trajectory and not by the measured state. The guidance layer, at every instant, produces a reference angle, reference angular velocity, and reference angular acceleration for the axis being controlled:</p>
+<div data-tex data-display>u(t) =
 
-                <a href="index.html#projects" class="doc-placeholder-link mono">&gt;_ BACK TO PROJECTS</a>
+\begin{bmatrix} u_1(t) \\ u_2(t) \\ u_3(t) \end{bmatrix}
+
+=
+
+\begin{bmatrix} \theta_{\text{ref}}(t) \\ \dot{\theta}_{\text{ref}}(t) \\ \ddot{\theta}_{\text{ref}}(t) \end{bmatrix}
+
+\in \mathbb{R}^{3}</div>
+<p>Each component is carried as a voltage referenced to the mid-supply rail <code>VREF</code>, so a signed quantity maps onto a single-supply node (Vref = VDD/2). This is the standard single supply technique: "a source of 'half-supply' creates a 'virtual ground' exactly half way between the positive supply and ground potentials" (Carter &amp; Brown, n.d.):</p>
+<div data-tex data-display>V_{u_i} = V_{\text{REF}} + k_i\, u_i, \qquad i = 1,2,3</div>
+<p>where <span data-tex>k_i</span> converts a physical quantity into volts. Each  <span data-tex>k_i</span> value is chosen so that the largest value the channel ever becomes lands within the bounds of <code>VREF</code> which is <span data-tex>\pm 1.65</span> V; a bound the electronics of this board can go before clipping occurs.</p>
+<figure class="figure"><img src="websiteImages/analog_nn/docs_images/input_u.png" alt="Input channels and inverters" loading="lazy"></figure>
+<p><em>The three input channels. Each connector (<code>J9</code>, <code>J11</code>, <code>J13</code>) drives a unity-gain inverting amplifier referenced to <code>VREF</code>, producing the negated rail that the signed weight pairs of Stage 1 need: <code>+Vu1</code> is taken straight from the connector and <code>-Vu1</code> comes from <code>U43</code>, with <span data-tex>R_3 = R_4 = 10\ \text{k}\Omega</span> setting a gain of exactly <span data-tex>-1</span> about <code>VREF</code>.</em></p>
+<h2 id="analog-neural-network">Analog Neural Network</h2>
+<p>The network is a continuous-time recurrent neural network (CTRNN) with three inputs, four hidden states, and one torque output. It functions to approximate the nonlinear inverse dynamics <span data-tex>\tau_{\text{ff}} = f^{-1}(u)</span>, the torque that would give you the trajectory on the spacecraft.</p>
+<div data-tex data-display>u \in \mathbb{R}^{3}, \qquad h \in \mathbb{R}^{4}, \qquad \tau_{\text{ff}} \in \mathbb{R}</div>
+<h3 id="stage-1-input-projection">Stage 1 Input Projection</h3>
+<p>The input vector is projected onto the four hidden channels by the input weight matrix <span data-tex>W_{ih} \in \mathbb{R}^{4 \times 3}</span>. This is physically represented by the <code>crossbar_u</code> sheet: twelve weights, one per intersection of an input column and a hidden row.</p>
+<div data-tex data-display>W_{ih}\,u =
+
+\begin{bmatrix}
+
+w^{ih}_{11} &amp; w^{ih}_{12} &amp; w^{ih}_{13} \\
+
+w^{ih}_{21} &amp; w^{ih}_{22} &amp; w^{ih}_{23} \\
+
+w^{ih}_{31} &amp; w^{ih}_{32} &amp; w^{ih}_{33} \\
+
+w^{ih}_{41} &amp; w^{ih}_{42} &amp; w^{ih}_{43}
+
+\end{bmatrix}
+
+\begin{bmatrix} u_1 \\ u_2 \\ u_3 \end{bmatrix}
+
+=
+
+\begin{bmatrix}
+
+w^{ih}_{11}u_1 + w^{ih}_{12}u_2 + w^{ih}_{13}u_3 \\
+
+w^{ih}_{21}u_1 + w^{ih}_{22}u_2 + w^{ih}_{23}u_3 \\
+
+w^{ih}_{31}u_1 + w^{ih}_{32}u_2 + w^{ih}_{33}u_3 \\
+
+w^{ih}_{41}u_1 + w^{ih}_{42}u_2 + w^{ih}_{43}u_3
+
+\end{bmatrix}
+
+\in \mathbb{R}^{4}</div>
+<p>Vector multiplication is performed through Ohm's law and the sum is Kirchhoff's current law: each weight sets a conductance <span data-tex>G^{ih}_{ji}</span>, the input voltage across it produces a current <span data-tex>I_{ji} = G^{ih}_{ji} V_{u_i}</span>, and the currents landing on the same virtual-ground summing node add themselves. A <span data-tex>4 \times 3</span> matrix–vector product costs no clock cycles and no multiplier: it happens at the speed of the wire. This is the defining property of analog in-memory computing, in which Ohm's and Kirchhoff's laws act as "physical surrogates of multiply-accumulate operations" in a crossbar array rather than the operation being performed by arithmetic hardware (Mannocci et al., 2026).</p>
+<figure class="figure"><img src="websiteImages/analog_nn/docs_images/crossbar_u.png" alt="Input crossbar" loading="lazy"></figure>
+<p><em>The <code>crossbar_u</code> sheet, <span data-tex>W_{ih}</span>. Three input rows run horizontally, each carrying both polarities (<code>+Vu1</code>/<code>-Vu1</code> and so on); four columns descend to the summing nodes <code>cbar1</code>…<code>cbar4</code>. Every intersection holds two AD5160 potentiometers (one tapping the positive rail, one the negative) so the twelve weights of <span data-tex>W_{ih}</span> occupy twenty-four parts, <code>U60</code> through <code>U83</code>. Their chip-select lines (<code>CS11</code>, <code>CS11_neg</code>, …) come from the shift-register chain.</em></p>
+<p>A potentiometer conductance is strictly positive, so a signed weight is built from two paths driven by equal and opposite voltages. Every signal exists on the board in both polarities about <code>VREF</code>.</p>
+<div data-tex data-display>I = G^{+}(V - V_{\text{REF}}) + G^{-}\big({-}(V - V_{\text{REF}})\big) = (G^{+} - G^{-})(V - V_{\text{REF}})</div>
+<p>giving a weight of either sign from strictly positive conductances:</p>
+<div data-tex data-display>w = \alpha\,(G^{+} - G^{-}), \qquad G^{\pm} \ge 0</div>
+<p>Each conductance is set by an AD5160 8-bit digital potentiometer and loaded over the <code>SDI</code>/<code>CLK</code> shift-register chain. The part is available with end-to-end resistances of 5 kΩ, 10 kΩ, 50 kΩ, and 100 kΩ; this board uses the 10 kΩ variant (Analog Devices, n.d.).</p>
+<h3 id="stage-2-recurrent-projection">Stage 2 Recurrent Projection</h3>
+<p>The hidden state is fed back on itself through <span data-tex>W_{hh} \in \mathbb{R}^{4 \times 4}</span> (the <code>crossbar_h</code> sheet, sixteen weights, driven by the <code>Vh1_back</code> … <code>Vh4_back</code> return nets). This is what gives the network memory: the output depends on the history of the command, not just its current value. The recurrent weight matrix is what makes the network a dynamical system.</p>
+<figure class="figure"><img src="websiteImages/analog_nn/docs_images/crossbar_h.png" alt="Recurrent crossbar" loading="lazy"></figure>
+<p><em>The <code>crossbar_h</code> sheet, <span data-tex>W_{hh}</span>. Same construction as the input crossbar but square: four rows of returning hidden states against the four summing nodes, thirty-two potentiometers (<code>U100</code>–<code>U131</code>) for sixteen signed weights. Every row reaches every column, which is what allows the off-diagonal coupling that lets units oscillate and lead rather than behaving as four independent filters.</em></p>
+<div data-tex data-display>W_{hh}\,h =
+
+\begin{bmatrix}
+
+w^{hh}_{11} &amp; w^{hh}_{12} &amp; w^{hh}_{13} &amp; w^{hh}_{14} \\
+
+w^{hh}_{21} &amp; w^{hh}_{22} &amp; w^{hh}_{23} &amp; w^{hh}_{24} \\
+
+w^{hh}_{31} &amp; w^{hh}_{32} &amp; w^{hh}_{33} &amp; w^{hh}_{34} \\
+
+w^{hh}_{41} &amp; w^{hh}_{42} &amp; w^{hh}_{43} &amp; w^{hh}_{44}
+
+\end{bmatrix}
+
+\begin{bmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \end{bmatrix}
+
+=
+
+\begin{bmatrix}
+
+w^{hh}_{11}h_1 + w^{hh}_{12}h_2 + w^{hh}_{13}h_3 + w^{hh}_{14}h_4 \\
+
+w^{hh}_{21}h_1 + w^{hh}_{22}h_2 + w^{hh}_{23}h_3 + w^{hh}_{24}h_4 \\
+
+w^{hh}_{31}h_1 + w^{hh}_{32}h_2 + w^{hh}_{33}h_3 + w^{hh}_{34}h_4 \\
+
+w^{hh}_{41}h_1 + w^{hh}_{42}h_2 + w^{hh}_{43}h_3 + w^{hh}_{44}h_4
+
+\end{bmatrix}
+
+\in \mathbb{R}^{4}</div>
+<figure class="figure"><img src="websiteImages/analog_nn/docs_images/h_feedback.png" alt="Hidden state inverters" loading="lazy"></figure>
+<p><em>The negated hidden-state rails. Each buffered state <code>Vh1_back</code>…<code>Vh4_back</code> passes through a unity-gain inverter about <code>VREF</code> (<code>U4</code>–<code>U7</code>, 10 k<span data-tex>\Omega</span> pairs) to produce <code>-Vh1</code>…<code>-Vh4</code>. These four amplifiers are what make the recurrent weights signed: without an inverted copy of each state, every entry of <span data-tex>W_{hh}</span> could only ever be positive, since a potentiometer's conductance cannot be.</em></p>
+<h3 id="stage-3-pre-activation">Stage 3 Pre-activation</h3>
+<p>Both crossbars discharge into the same summing node, so the two products add before the nonlinearity:</p>
+<div data-tex data-display>z = W_{ih}\,u + W_{hh}\,h</div>
+<div data-tex data-display>\begin{bmatrix} z_1 \\ z_2 \\ z_3 \\ z_4 \end{bmatrix}
+
+=
+
+\begin{bmatrix}
+
+\sum_{i=1}^{3} w^{ih}_{1i}u_i + \sum_{k=1}^{4} w^{hh}_{1k}h_k \\
+
+\sum_{i=1}^{3} w^{ih}_{2i}u_i + \sum_{k=1}^{4} w^{hh}_{2k}h_k \\
+
+\sum_{i=1}^{3} w^{ih}_{3i}u_i + \sum_{k=1}^{4} w^{hh}_{3k}h_k \\
+
+\sum_{i=1}^{3} w^{ih}_{4i}u_i + \sum_{k=1}^{4} w^{hh}_{4k}h_k
+
+\end{bmatrix}</div>
+<p>There is no bias term, and the part count is what rules one out. The board carries 64 potentiometers, which is exactly <span data-tex>2 \times (12 + 16 + 4)</span>: twelve weights in <span data-tex>W_{ih}</span>, sixteen in <span data-tex>W_{hh}</span>, four in <span data-tex>W_o</span> and each requiring a <em>pair</em> of pots, since a conductance is strictly positive and a signed weight has to be built as the difference of two of them.</p>
+<p>There is no bias term because a bias would be a constant current pushed into the summing node regardless of the command, so the network would ask for some fixed torque even when the guidance layer had commanded nothing. Here <span data-tex>z = 0</span> at zero command, <span data-tex>\sigma(0) = 0</span>, every hidden state settles to zero, and the readout <span data-tex>W_o h</span> goes to zero with it: idle is idle.</p>
+<p>Physically, the sum is performed by a transimpedance amplifier per row (<code>U8</code>, <code>U2</code>, <code>U44</code>, <code>U48</code>), whose inverting input is the crossbar node held at <code>VREF</code> and whose feedback resistor is 10 k<span data-tex>\Omega</span> (<code>R15</code>, <code>R53</code>, <code>R60</code>, <code>R67</code>). Because of the amplifier's high gain, only a very small voltage appears across its inputs, so the inverting node "can be assumed to be ground — a 'virtual ground'" (Carter &amp; Brown, n.d.). That is what makes the summing exact: negative feedback holds the node at a fixed potential regardless of how much current arrives, so the individual crossbar currents do not interact and none of them modulates the voltage the others see. The four pre-activations appear on the schematic as the nets <code>z1*</code>, <code>z2*</code>, <code>z3*</code>, <code>z4*</code>; the asterisk records that these are the <em>inverted</em> sums, since a transimpedance stage inverts. The sign is restored by the inverting integrator of Stage 5.</p>
+<p>Each row's transimpedance output is then scaled by a non-inverting stage of gain <span data-tex>1 + R_{16}/R_{17} = 2</span> (<code>U9</code>, <code>U40</code>, <code>U45</code>, <code>U49</code>) before reaching the nonlinearity. It is there because one resistor cannot both keep <code>U8</code> inside its supply limit and deliver enough voltage to saturate the <span data-tex>\sigma</span> block. Made large, <span data-tex>R_{15}</span> hands the <span data-tex>\sigma</span> block plenty of signal but lets <code>U8</code> slam into its rail on ordinary crossbar currents; made small, it keeps <code>U8</code> safe but leaves the <span data-tex>\sigma</span> block short of saturation. Doubling the voltage afterwards lets <span data-tex>R_{15}</span> stay small while the <span data-tex>\sigma</span> block still gets the signal it needs.</p>
+<h3 id="stage-4-nonlinearity">Stage 4 Nonlinearity</h3>
+<p>In the trained model each pre-activation passes through a saturating, odd, monotone squashing function:</p>
+<div data-tex data-display>\sigma(z) =
+
+\begin{bmatrix} \sigma(z_1) \\ \sigma(z_2) \\ \sigma(z_3) \\ \sigma(z_4) \end{bmatrix}
+
+=
+
+\begin{bmatrix} \tanh(z_1) \\ \tanh(z_2) \\ \tanh(z_3) \\ \tanh(z_4) \end{bmatrix}
+
+\in (-1, 1)^{4}</div>
+<div data-tex data-display>\tanh(z) = \frac{e^{z} - e^{-z}}{e^{z} + e^{-z}}, \qquad
+
+\frac{d}{dz}\tanh(z) = 1 - \tanh^{2}(z)</div>
+<p><span data-tex>\tanh</span> was used because it is zero-centered and odd, <span data-tex>\sigma(-z) = -\sigma(z)</span>, which matches a torque command that must be symmetric about zero for clockwise and counter-clockwise rotation. It also saturates, which is the safety property that matters in flight: however large the commanded input, <span data-tex>|\sigma(z_j)| &lt; 1</span> bounds every hidden state through Stage 5, and therefore bounds the feedforward torque the network can ever ask for. The neurons in the earliest networks of this family were strictly on or off. Hopfield (1984) showed that replacing them with continuous ones, whose output follows a smooth S-shaped curve of their input as shown here on this board, leaves the network's collective behavior essentially unchanged, and that a network of this kind can be built directly from ordinary amplifiers and resistors.</p>
+<p>The nonlinearity is also what makes this a neural network rather than a filter. Stages 1, 2, 3, 5, and 6 are all linear maps, and a composition of linear maps is linear; without <span data-tex>\sigma</span> the entire block collapses to a transfer function and cannot approximate a nonlinear inverse-dynamics map at all.</p>
+<figure class="figure"><img src="websiteImages/analog_nn/docs_images/opamp_1.png" alt="One hidden unit with the sigma block" loading="lazy"></figure>
+<p><em>One complete hidden unit, left to right: <code>U8</code> converts the crossbar's summed current into the pre-activation <code>z1*</code>; <code>U9</code> scales it by two; <code>R19</code> and the 10 k<span data-tex>\Omega</span> shunt attenuate that swing by <span data-tex>1/11</span> to reach the differential pair <code>Q4A</code>/<code>Q4B</code>; the <code>Q2A</code>/<code>Q2B</code> mirror above returns the pair's output as a signed current; <code>Q12</code> and <code>R50</code> set the tail current from <code>VBIAS</code>; and the result is delivered into <code>U10</code>'s summing node, where <code>C1</code> and <code>R44</code> form the leaky integrator whose output <code>U11</code> buffers back out as <code>Vh1_back</code>. Note that the pair's collectors connect directly to the integrator input, there is no resistor between the <span data-tex>\sigma</span> block and the integrator.</em></p>
+<h3 id="stage-5-integration">Stage 5 Integration</h3>
+<p>The nonlinearity is proportional to the <em>derivative</em> of the hidden state, not the state itself, which is what makes the network continuous-time rather than a clocked layer. In the idealized CTRNN this is a pure integration:</p>
+<div data-tex data-display>\dot{h} = \sigma(z), \qquad h(t) = h(0) + \int_{0}^{t} \sigma\big(z(s)\big)\,ds</div>
+<figure class="figure"><img src="websiteImages/analog_nn/docs_images/opamp_2.png" alt="All four hidden units" loading="lazy"></figure>
+<p><em>All four hidden units on the <code>op_amps</code> sheet, one per row and identical apart from designators. The integrators are visible at the right of each row as a 1 µF capacitor in parallel with a 1 M<span data-tex>\Omega</span> resistor, the parallel pair is what makes the integration leaky, and their product sets <span data-tex>\tau_h = 1</span> s. The four <code>VBIAS</code> labels all reach the same divider, so a single bias network sets the tail current, and therefore the activation amplitude, for every unit at once.</em></p>
+<p>Each hidden unit has one op-amp integrator (<code>U10</code>, <code>U41</code>, <code>U46</code>, <code>U50</code>) with two parts around it: a feedback capacitor <span data-tex>C = 1\ \mu\text{F}</span> (<code>C1</code>, <code>C71</code>, <code>C72</code>, <code>C73</code>) and a feedback resistor <span data-tex>R_f = 1\ \text{M}\Omega</span> (<code>R44</code>, <code>R57</code>, <code>R64</code>, <code>R71</code>) placed <strong>in parallel with the capacitor</strong>. The <span data-tex>\sigma</span> block of Stage 4 delivers a <em>current</em> into the summing node, so the integrator acts as a transresistance.</p>
+<p>At the virtual-ground node three currents meet and must cancel: the current arriving from the <span data-tex>\sigma</span> block, the current leaking out through <span data-tex>R_f</span>, and the current charging <span data-tex>C</span>. Writing <span data-tex>h_j</span> for the integrator output measured from <code>VREF</code>,</p>
+<div data-tex data-display>I_{\sigma} \;+\; \frac{h_j}{R_f} \;+\; C\,\frac{dh_j}{dt} \;=\; 0</div>
+<p>Multiplying through by <span data-tex>R_f</span> puts this in standard first-order form:</p>
+<div data-tex data-display>R_f C\,\frac{dh_j}{dt} \;=\; -\,h_j \;-\; R_f\,I_{\sigma}</div>
+<p>The minus sign left on <span data-tex>R_f I_{\sigma}</span> cancels against the inversion the <code>z1*</code>…<code>z4*</code> nets already carry from Stage 3. Substituting <span data-tex>I_{\sigma} = I_{\text{tail}}\,\sigma(z_j)</span> then gives the standard leaky CTRNN state equation, the same first-order form used in continuous analog networks of graded-response units (Hopfield, 1984):</p>
+<div data-tex data-display>\boxed{\;\tau_h\,\dot{h}_j = -\,h_j + G\,\sigma(z_j)\;},
+
+\qquad
+
+\tau_h = R_f C = 1.0\ \text{s},
+
+\qquad
+
+G \equiv R_f\,I_{\text{tail}} = 1.57\ \text{V}</div>
+<p>At every instant the state <span data-tex>h_j</span> is heading toward the value <span data-tex>G\,\sigma(z_j)</span>, and <span data-tex>\tau_h</span> sets how quickly it closes the gap. With <span data-tex>\tau_h = 1</span> second, a unit takes a few seconds to respond fully, and what it holds at any moment reflects roughly the last second of its input.</p>
+<p>The two constants do different jobs. <span data-tex>R_f</span> converts the activation current into a voltage (1 M<span data-tex>\Omega</span> means one microamp of <span data-tex>I_{\sigma}</span> produces one volt of <span data-tex>h_j</span>). The <span data-tex>\sigma</span> block's output can never exceed <span data-tex>I_{\text{tail}} = 1.57\ \mu</span>A, so the state can never exceed <span data-tex>G = R_f I_{\text{tail}} = 1.57</span> V. No command can push a hidden state past 1.57 V, which sits just inside the <span data-tex>\pm 1.65</span> V supply. Since Stage 6 builds the torque command out of these states, it bounds the torque the network can ask for as well.</p>
+<p>The leak resistor is what makes the state usable over a long mission. Real transistors are never perfectly matched, and in the <span data-tex>\sigma</span> block that mismatch leaves a small error current flowing even when the input is zero. An integrator with no leak accumulates that error forever.</p>
+<p>Each <span data-tex>h_j</span> is buffered by <code>U11</code>, <code>U42</code>, <code>U47</code>, <code>U51</code> and returned to <code>crossbar_h</code> as <code>Vh1_back</code>…<code>Vh4_back</code>.</p>
+<h3 id="stage-6-output">Stage 6 Output</h3>
+<p>The four hidden states are collapsed into a single feedforward torque by the output weight row vector <span data-tex>W_o \in \mathbb{R}^{1 \times 4}</span>: the <code>torque</code> sheet, where <code>Wo1</code>…<code>Wo4</code> set the summing-amplifier gains and the result leaves on the <code>torque</code> net:</p>
+<div data-tex data-display>\tau_{\text{ff}} = W_o\,h =
+
+\begin{bmatrix} w^{o}_{1} &amp; w^{o}_{2} &amp; w^{o}_{3} &amp; w^{o}_{4} \end{bmatrix}
+
+\begin{bmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \end{bmatrix}
+
+= w^{o}_{1}h_1 + w^{o}_{2}h_2 + w^{o}_{3}h_3 + w^{o}_{4}h_4</div>
+<figure class="figure"><img src="websiteImages/analog_nn/docs_images/torque.png" alt="Output weight stage" loading="lazy"></figure>
+<p><em>The <code>torque</code> sheet, <span data-tex>W_o</span>. On the left, <code>U24</code>–<code>U27</code> invert the four hidden states to give each output weight its negative rail; the eight potentiometers <code>U28</code>–<code>U35</code> form the four signed pairs, and all of their outputs land on one summing node at <code>U92</code>, whose 10 k<span data-tex>\Omega</span> feedback resistor <code>R43</code> converts the total current back into the single <code>torque</code> voltage leaving on <code>J7</code>. A row vector of four weights collapses to a single amplifier.</em></p>
+<h3 id="final-formulation">Final formulation</h3>
+<p>Collecting the six stages, the whole analog block is two lines:</p>
+<div data-tex data-display>\boxed{\;
+
+\tau_h\,\dot{h} = -\,h + G\,\sigma\big(W_{ih}\,u + W_{hh}\,h\big)
+
+\;}</div>
+<div data-tex data-display>\boxed{\;\tau_{\text{ff}} = W_o\,h\;}</div>
+<p>Fully expanded, with <span data-tex>u = [\theta_{\text{ref}}, \dot{\theta}_{\text{ref}}, \ddot{\theta}_{\text{ref}}]^{\mathsf{T}}</span> and <span data-tex>\sigma</span> applied element wise:</p>
+<div data-tex data-display>\tau_h
+
+\begin{bmatrix} \dot{h}_1 \\ \dot{h}_2 \\ \dot{h}_3 \\ \dot{h}_4 \end{bmatrix}
+
+=
+
+-\begin{bmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \end{bmatrix}
+
++ G\,\sigma\!\left(
+
+\begin{bmatrix}
+
+w^{ih}_{11} &amp; w^{ih}_{12} &amp; w^{ih}_{13} \\
+
+w^{ih}_{21} &amp; w^{ih}_{22} &amp; w^{ih}_{23} \\
+
+w^{ih}_{31} &amp; w^{ih}_{32} &amp; w^{ih}_{33} \\
+
+w^{ih}_{41} &amp; w^{ih}_{42} &amp; w^{ih}_{43}
+
+\end{bmatrix}
+
+\begin{bmatrix} \theta_{\text{ref}} \\ \dot{\theta}_{\text{ref}} \\ \ddot{\theta}_{\text{ref}} \end{bmatrix}
+
++
+
+\begin{bmatrix}
+
+w^{hh}_{11} &amp; w^{hh}_{12} &amp; w^{hh}_{13} &amp; w^{hh}_{14} \\
+
+w^{hh}_{21} &amp; w^{hh}_{22} &amp; w^{hh}_{23} &amp; w^{hh}_{24} \\
+
+w^{hh}_{31} &amp; w^{hh}_{32} &amp; w^{hh}_{33} &amp; w^{hh}_{34} \\
+
+w^{hh}_{41} &amp; w^{hh}_{42} &amp; w^{hh}_{43} &amp; w^{hh}_{44}
+
+\end{bmatrix}
+
+\begin{bmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \end{bmatrix}
+
+\right)</div>
+<div data-tex data-display>\tau_{\text{ff}} =
+
+\begin{bmatrix} w^{o}_{1} &amp; w^{o}_{2} &amp; w^{o}_{3} &amp; w^{o}_{4} \end{bmatrix}
+
+\begin{bmatrix} h_1 \\ h_2 \\ h_3 \\ h_4 \end{bmatrix}</div>
+<p>There are <strong>32 trainable parameters</strong>: 12 in <span data-tex>W_{ih}</span>, 16 in <span data-tex>W_{hh}</span>, and 4 in <span data-tex>W_o</span>.</p>
+<p>These 32 numbers are found offline by gradient descent on a simulated environment, then written into the potentiometer chain. Once loaded, the board holds them statically. This computation runs continuously rather than at a loop rate unlike the digital controller. The digital side never computes <span data-tex>\tau_{\text{ff}}</span>; it only measures the resulting error and corrects it.</p>
+<h2 id="references">References</h2>
+<p>Analog Devices. (n.d.). <em>AD5160: 256-position SPI-compatible digital potentiometer</em> [Data sheet]. Retrieved August 12, 2026, from <a href="https://www.analog.com/media/en/technical-documentation/data-sheets/AD5160.pdf" target="_blank" rel="noopener noreferrer">https://www.analog.com/media/en/technical-documentation/data-sheets/AD5160.pdf</a></p>
+<p>Beer, R. D. (2022). The global structure of codimension-2 local bifurcations in continuous-time recurrent neural networks. <em>Biological Cybernetics, 116</em>, 501–526. Preprint available at <a href="https://arxiv.org/abs/2111.04547" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2111.04547</a></p>
+<p>Carter, B., &amp; Brown, T. R. (n.d.). <em>Handbook of operational amplifier applications</em> (SBOA092B). Texas Instruments. Retrieved August 12, 2026, from <a href="https://www.ti.com/lit/an/sboa092b/sboa092b.pdf" target="_blank" rel="noopener noreferrer">https://www.ti.com/lit/an/sboa092b/sboa092b.pdf</a></p>
+<p>Fortunato, M. (2012). <em>Temperature and voltage variation of ceramic capacitors, or why your 4.7 µF capacitor becomes a 0.33 µF capacitor</em> (Tutorial 5527). Maxim Integrated. <a href="https://www.analog.com/en/resources/technical-articles/temperature-and-voltage-variation-ceramic-capacitor.html" target="_blank" rel="noopener noreferrer">https://www.analog.com/en/resources/technical-articles/temperature-and-voltage-variation-ceramic-capacitor.html</a></p>
+<p>Gao, Z. (2003). Scaling and bandwidth-parameterization based controller tuning. <em>Proceedings of the 2003 American Control Conference</em>, 4989–4996. <a href="https://doi.org/10.1109/ACC.2003.1242516" target="_blank" rel="noopener noreferrer">https://doi.org/10.1109/ACC.2003.1242516</a> (Open conference-proceedings copy: <a href="http://congres.cran.univ-lorraine.fr/2003/ACC%202003/Papers/FP03-3.PDF" target="_blank" rel="noopener noreferrer">http://congres.cran.univ-lorraine.fr/2003/ACC%202003/Papers/FP03-3.PDF</a>)</p>
+<p>Herbst, G. (2013). A simulative study on active disturbance rejection control (ADRC) as a control tool for practitioners. <em>Electronics, 2</em>(3), 246–279. <a href="https://doi.org/10.3390/electronics2030246" target="_blank" rel="noopener noreferrer">https://doi.org/10.3390/electronics2030246</a> (Open access; corrected preprint at <a href="https://arxiv.org/abs/1908.04596" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/1908.04596</a>)</p>
+<p>Hong, B., &amp; Hajimiri, A. (2017). Analysis of a balanced analog multiplier for an arbitrary number of signed inputs. <em>International Journal of Circuit Theory and Applications, 45</em>(4), 483–501. <a href="https://doi.org/10.1002/cta.2243" target="_blank" rel="noopener noreferrer">https://doi.org/10.1002/cta.2243</a> (Author version: <a href="https://chic.caltech.edu/wp-content/uploads/2016/08/BHongMultiplierCTA2016-1.pdf" target="_blank" rel="noopener noreferrer">https://chic.caltech.edu/wp-content/uploads/2016/08/BHongMultiplierCTA2016-1.pdf</a>)</p>
+<p>Hopfield, J. J. (1984). Neurons with graded response have collective computational properties like those of two-state neurons. <em>Proceedings of the National Academy of Sciences, 81</em>(10), 3088–3092. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC345226/" target="_blank" rel="noopener noreferrer">https://pmc.ncbi.nlm.nih.gov/articles/PMC345226/</a></p>
+<p>Mannocci, P., Larelli, G., Bonomi, M., &amp; Ielmini, D. (2026). Achieving high precision in analog in-memory computing systems. <em>npj Unconventional Computing, 3</em>(1). <a href="https://doi.org/10.1038/s44335-025-00044-2" target="_blank" rel="noopener noreferrer">https://doi.org/10.1038/s44335-025-00044-2</a></p>
+<p>Palermo, S. (2012). <em>Lecture 20: Bandgap reference</em> [Lecture notes]. ECEN474: (Analog) VLSI Circuit Design, Analog &amp; Mixed-Signal Center, Texas A&amp;M University. <a href="https://people.engr.tamu.edu/spalermo/ecen474/lecture20_ee474_bandgaps.pdf" target="_blank" rel="noopener noreferrer">https://people.engr.tamu.edu/spalermo/ecen474/lecture20_ee474_bandgaps.pdf</a></p>
+<p>Trischler, A. P., &amp; D'Eleuterio, G. M. T. (2016). Synthesis of recurrent neural networks for dynamical system simulation. <em>Neural Networks, 80</em>, 67–78. <a href="https://doi.org/10.1016/j.neunet.2016.04.001" target="_blank" rel="noopener noreferrer">https://doi.org/10.1016/j.neunet.2016.04.001</a> (Open preprint: <a href="https://arxiv.org/abs/1512.05702" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/1512.05702</a>)</p>
+<p>University of Michigan. (n.d.). <em>Introduction: PID controller design.</em> Control Tutorials for MATLAB and Simulink. Retrieved August 12, 2026, from <a href="https://ctms.engin.umich.edu/CTMS/index.php?example=Introduction&amp;section=ControlPID" target="_blank" rel="noopener noreferrer">https://ctms.engin.umich.edu/CTMS/index.php?example=Introduction&amp;section=ControlPID</a></p>
+<p>Weston, S. V., Burkhard, C. D., Stupl, J. M., Ticknor, R. L., Yost, B. D., Austin, R. A., Galchenko, P., Newman, L. K., &amp; Santos Soto, L. (2025). <em>State-of-the-art small spacecraft technology</em> (NASA/TP—20250000142). National Aeronautics and Space Administration. <a href="https://ntrs.nasa.gov/citations/20250000142" target="_blank" rel="noopener noreferrer">https://ntrs.nasa.gov/citations/20250000142</a></p>
+                </article>
             </div>
         </div>
     </main>
@@ -62,6 +327,8 @@
         </div>
     </footer>
 
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
     <script src="script.js"></script>
+    <script defer src="docs.js"></script>
 </body>
 </html>

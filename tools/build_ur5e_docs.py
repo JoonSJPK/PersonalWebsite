@@ -315,6 +315,7 @@ PAGE = '''<!DOCTYPE html>
         <div class="doc-container">
             <div class="doc-titleblock">
                 <span class="doc-eyebrow mono">UR5E CONTROL PROJECT &mdash; TASK {num}</span>
+                <span class="doc-affil mono">WIM ROBOTICS &middot; SUMMER RESEARCH COLLABORATOR</span>
                 <h1 class="doc-title mono">{title}</h1>
                 <p class="doc-blurb newsreader">{blurb}</p>
             </div>
