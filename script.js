@@ -1,6 +1,39 @@
 'use strict';
 
 /* ──────────────────────────────────────────────
+   MEDIA DERIVATIVES
+
+   tools/optimize_images.py writes web-sized copies next to every source:
+   `photo.png` -> `photo.800.webp` / `photo.1600.webp`, and animated GIFs
+   become a looping `clip.mp4` with a `clip.poster.webp` still. The project
+   data keeps pointing at the originals — these resolve the derivative and
+   fall back to the source if a run hasn't happened yet.
+────────────────────────────────────────────── */
+const STILL_RE = /\.(png|jpe?g)$/i;
+
+function isMotion(src)  { return /\.gif$/i.test(src); }
+function motionSrc(src) { return src.replace(/\.gif$/i, '.mp4'); }
+function posterSrc(src) { return src.replace(/\.gif$/i, '.poster.webp'); }
+
+function stillSrc(src, edge) {
+    return STILL_RE.test(src) ? src.replace(STILL_RE, `.${edge}.webp`) : src;
+}
+
+/* A missing derivative must not leave a broken frame on the page. */
+function fallback(src) {
+    return `onerror="this.onerror=null;this.src='${src}'"`;
+}
+
+/* Either a still or a muted looping clip, whichever the source is. */
+function mediaTag(src, edge, cls, alt) {
+    if (isMotion(src)) {
+        return `<video class="${cls}" src="${motionSrc(src)}" poster="${posterSrc(src)}"
+                       autoplay muted loop playsinline aria-label="${alt}"></video>`;
+    }
+    return `<img class="${cls}" src="${stillSrc(src, edge)}" alt="${alt}" ${fallback(src)}>`;
+}
+
+/* ──────────────────────────────────────────────
    PROJECT DATA
 ────────────────────────────────────────────── */
 const projectDetails = {
@@ -236,7 +269,14 @@ function unlockScroll() {
     if (scrollLockDepth === 0 || --scrollLockDepth > 0) return;
     document.body.classList.remove('scroll-locked');
     document.body.style.top = '';
+    /* `html { scroll-behavior: smooth }` would animate this restore — the page
+       visibly scrolls from the top back down to where the reader was. Put the
+       offset back instantly, then hand smooth scrolling back to the anchors. */
+    const root = document.documentElement;
+    const prev = root.style.scrollBehavior;
+    root.style.scrollBehavior = 'auto';
     window.scrollTo(0, scrollLockY);
+    root.style.scrollBehavior = prev;
 }
 
 /* Horizontal swipe detection for the lightbox. Ignores gestures that are
@@ -669,79 +709,120 @@ function initKeyboardNav() {
 }
 
 /* ──────────────────────────────────────────────
-   PROJECT MODAL
+   PROJECT EXPANSION VIEW
+
+   Clicking a card grows that card itself into an
+   almost-fullscreen panel in place — no separate
+   modal window. The gallery keeps the side of the
+   layout it occupied as a card, and any scroll
+   gesture that the copy column can't absorb
+   collapses the panel back into the card.
 ────────────────────────────────────────────── */
-function openProject(projectId) {
+let openPanel = null;
+
+function openProject(projectId, sourceEl) {
     const project = projectDetails[projectId];
     if (!project) return;
+    if (openPanel) return;
 
-    const modal = document.createElement('div');
-    modal.className = 'project-modal';
-    modal.setAttribute('role', 'dialog');
-    modal.setAttribute('aria-modal', 'true');
-    modal.setAttribute('aria-label', project.title);
+    const entry = sourceEl?.closest?.('.project-entry')
+        || document.querySelector(`.project-entry[onclick*="${projectId}"]`);
+    const card = entry?.querySelector('.project-box') || entry;
+    if (!card) return;
 
-    const galleryHTML = project.images.length
-        ? `<div class="terminal-gallery">${project.images.map((src, i) =>
-            `<img src="${src}" alt="${project.title} — image ${i + 1}" loading="${i < 3 ? 'eager' : 'lazy'}">`
-          ).join('')}</div>`
+    /* The list alternates sides: even-numbered entries render their image on
+       the right (see the `direction: rtl` rule). Keep the gallery where the
+       reader last saw it. */
+    const siblings = Array.from(document.querySelectorAll('.project-entry'));
+    const galleryRight = siblings.indexOf(entry) % 2 === 1;
+
+    const images = project.images || [];
+
+    const thumbsHTML = images.length > 1
+        ? `<div class="px-thumbs">${images.map((src, i) =>
+            `<button class="px-thumb${i === 0 ? ' active' : ''}" data-idx="${i}" aria-label="Show image ${i + 1}">
+                <img src="${isMotion(src) ? posterSrc(src) : stillSrc(src, 800)}" alt=""
+                     loading="${i < 4 ? 'eager' : 'lazy'}" ${fallback(src)}>
+            </button>`).join('')}</div>`
+        : '';
+
+    const mediaHTML = images.length
+        ? `<div class="px-media">
+                <button class="px-stage" aria-label="Open image viewer">
+                    <span class="px-stage-media">${mediaTag(images[0], 1600, 'px-stage-img', `${project.title} — image 1`)}</span>
+                    <span class="px-stage-hint mono">[ CLICK TO ENLARGE ]</span>
+                </button>
+                ${thumbsHTML}
+                <div class="px-counter mono">01 / ${String(images.length).padStart(2, '0')}</div>
+            </div>`
         : '';
 
     const videosHTML = project.videos?.length
         ? `<div class="terminal-section">
-                    <span class="terminal-key">// VIDEO${project.videos.length > 1 ? 'S' : ''}</span>
-                    <div class="modal-videos">${project.videos.map((v, i) =>
-                        `<div class="modal-video${v.short ? ' modal-video-short' : ''}">
-                            <div class="video-label mono">${String(i + 1).padStart(2, '0')}. ${v.title.toUpperCase()}</div>
-                            <div class="video-frame-wrap" data-vid="${v.id}" onclick="loadVideo(this)" role="button" tabindex="0" aria-label="Play: ${v.title}">
-                                <div class="video-facade">
-                                    <img src="https://img.youtube.com/vi/${v.id}/hqdefault.jpg" alt="${v.title} thumbnail" loading="lazy">
-                                    <div class="video-play-btn">
-                                        <div class="video-play-icon">&#x25B6;</div>
-                                        <span class="video-play-label">PLAY</span>
-                                    </div>
+                <span class="terminal-key">// VIDEO${project.videos.length > 1 ? 'S' : ''}</span>
+                <div class="modal-videos">${project.videos.map((v, i) =>
+                    `<div class="modal-video${v.short ? ' modal-video-short' : ''}">
+                        <div class="video-label mono">${String(i + 1).padStart(2, '0')}. ${v.title.toUpperCase()}</div>
+                        <div class="video-frame-wrap" data-vid="${v.id}" onclick="loadVideo(this)" role="button" tabindex="0" aria-label="Play: ${v.title}">
+                            <div class="video-facade">
+                                <img src="https://img.youtube.com/vi/${v.id}/hqdefault.jpg" alt="${v.title} thumbnail" loading="lazy">
+                                <div class="video-play-btn">
+                                    <div class="video-play-icon">&#x25B6;</div>
+                                    <span class="video-play-label">PLAY</span>
                                 </div>
                             </div>
-                        </div>`).join('')}</div>
-                </div>`
+                        </div>
+                    </div>`).join('')}</div>
+            </div>`
         : '';
 
     const techHTML = project.technologies.map(t =>
         `<span class="tag mono">[${t.toUpperCase()}]</span>`
     ).join('');
 
-    const featuresHTML = project.features.map(f =>
-        `<li>${f}</li>`
-    ).join('');
+    const featuresHTML = project.features.map(f => `<li>${f}</li>`).join('');
 
     const docsHTML = project.docs?.length
         ? `<div class="terminal-section">
-                    <span class="terminal-key">// WRITEUPS</span>
-                    <div class="doc-links">${project.docs.map(d =>
-                        `<a class="doc-link" href="${d.href}">
-                            <span class="doc-link-num">${d.tag}</span>
-                            <span class="doc-link-title">${d.title}</span>
-                            <span class="doc-link-arrow">&rarr;</span>
-                        </a>`).join('')}</div>
-                </div>`
+                <span class="terminal-key">// WRITEUPS</span>
+                <div class="doc-links">${project.docs.map(d =>
+                    `<a class="doc-link" href="${d.href}">
+                        <span class="doc-link-num">${d.tag}</span>
+                        <span class="doc-link-title">${d.title}</span>
+                        <span class="doc-link-arrow">&rarr;</span>
+                    </a>`).join('')}</div>
+            </div>`
         : '';
 
     const affilHTML = project.affiliation
         ? `<div class="terminal-section">
-                    <span class="terminal-key">// AFFILIATION</span>
-                    <p class="terminal-value">${project.affiliation}</p>
-                </div>`
+                <span class="terminal-key">// AFFILIATION</span>
+                <p class="terminal-value">${project.affiliation}</p>
+            </div>`
         : '';
 
-    modal.innerHTML = `
-        <div class="modal-terminal">
-            <div class="terminal-titlebar">
-                <span class="terminal-title mono">&gt; ${project.title.toUpperCase()}</span>
-                <button class="terminal-close mono" aria-label="Close modal">[X]</button>
+    const scrim = document.createElement('div');
+    scrim.className = 'px-scrim';
+
+    const panel = document.createElement('div');
+    panel.className = 'px-panel'
+        + (galleryRight ? ' px-media-right' : '')
+        + (images.length ? '' : ' px-no-media');
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-modal', 'true');
+    panel.setAttribute('aria-label', project.title);
+
+    panel.innerHTML = `
+        <div class="px-bar">
+            <span class="terminal-title mono">&gt; ${project.title.toUpperCase()}</span>
+            <div class="px-bar-end">
+                <span class="px-hint mono">[ESC] TO CLOSE</span>
+                <button class="terminal-close mono" aria-label="Close">[X]</button>
             </div>
-            <div class="terminal-body">
-                ${galleryHTML}
-                ${videosHTML}
+        </div>
+        <div class="px-body">
+            ${mediaHTML}
+            <div class="px-info">
                 ${affilHTML}
                 <div class="terminal-section">
                     <span class="terminal-key">// DESCRIPTION</span>
@@ -756,23 +837,59 @@ function openProject(projectId) {
                     <span class="terminal-key">// FEATURES</span>
                     <ul class="feature-list">${featuresHTML}</ul>
                 </div>
+                ${videosHTML}
             </div>
         </div>`;
 
-    document.body.appendChild(modal);
+    document.body.append(scrim, panel);
     lockScroll();
+    // Measured after the lock, which can reclaim the scrollbar's width.
+    const from = card.getBoundingClientRect();
+    card.classList.add('px-source');
 
-    requestAnimationFrame(() => requestAnimationFrame(() => modal.classList.add('open')));
-
-    // Wire gallery image clicks → lightbox
-    if (project.images.length) {
-        modal.querySelectorAll('.terminal-gallery img').forEach((img, idx) => {
-            img.addEventListener('click', () => openLightbox(project.images, idx));
-        });
+    /* FLIP: the panel is laid out at its final size, then squeezed back onto
+       the card's footprint and released. */
+    function frameTransform() {
+        const to = panel.getBoundingClientRect();
+        const sx = Math.max(from.width, 1) / Math.max(to.width, 1);
+        const sy = Math.max(from.height, 1) / Math.max(to.height, 1);
+        return `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${sx}, ${sy})`;
     }
 
-    // The modal is built after initKeyboardNav ran, so wire its videos here
-    modal.querySelectorAll('.video-frame-wrap[tabindex]').forEach(el => {
+    panel.style.transform = frameTransform();
+    panel.style.opacity = '0';
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        panel.style.transform = '';
+        panel.style.opacity = '';
+        panel.classList.add('px-open');
+        scrim.classList.add('px-open');
+    }));
+
+    /* ── gallery ── */
+    const stage    = panel.querySelector('.px-stage-media');
+    const counter  = panel.querySelector('.px-counter');
+    let current = 0;
+
+    function show(i) {
+        if (!images.length) return;
+        current = Math.min(Math.max(i, 0), images.length - 1);
+        if (stage) stage.innerHTML = mediaTag(
+            images[current], 1600, 'px-stage-img',
+            `${project.title} — image ${current + 1}`);
+        if (counter) counter.textContent =
+            `${String(current + 1).padStart(2, '0')} / ${String(images.length).padStart(2, '0')}`;
+        panel.querySelectorAll('.px-thumb').forEach((t, idx) =>
+            t.classList.toggle('active', idx === current));
+    }
+
+    panel.querySelectorAll('.px-thumb').forEach(t => {
+        t.addEventListener('click', () => show(Number(t.dataset.idx)));
+    });
+    panel.querySelector('.px-stage')?.addEventListener('click', () => openLightbox(images, current));
+
+    // Built after initKeyboardNav ran, so wire this panel's videos here.
+    panel.querySelectorAll('.video-frame-wrap[tabindex]').forEach(el => {
         el.addEventListener('keydown', e => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -781,23 +898,43 @@ function openProject(projectId) {
         });
     });
 
+    /* ── dismissal — [X], the backdrop, or Escape ── */
+    function onKey(e) {
+        if (e.key === 'Escape') close();
+        if (e.key === 'ArrowLeft')  show(current - 1);
+        if (e.key === 'ArrowRight') show(current + 1);
+    }
+
     let closed = false;
     function close() {
         if (closed) return;
         closed = true;
-        modal.classList.remove('open');
+        openPanel = null;
+
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        // Closing is the opening's fade, nothing more — the panel holds its
+        // size and dissolves rather than shrinking back down into the card.
+        if (!reduce) panel.style.opacity = '0';
+        panel.classList.remove('px-open');
+        scrim.classList.remove('px-open');
         unlockScroll();
-        setTimeout(() => modal.remove(), 320);
+
         document.removeEventListener('keydown', onKey);
+
+        setTimeout(() => {
+            panel.remove();
+            scrim.remove();
+            card.classList.remove('px-source');
+            entry?.focus?.({ preventScroll: true });
+        }, reduce ? 0 : 300);
     }
 
-    function onKey(e) {
-        if (e.key === 'Escape') close();
-    }
-
-    modal.querySelector('.terminal-close').addEventListener('click', close);
-    modal.addEventListener('click', e => { if (e.target === modal) close(); });
     document.addEventListener('keydown', onKey);
+    panel.querySelector('.terminal-close').addEventListener('click', close);
+    scrim.addEventListener('click', close);
+
+    openPanel = { close };
+    panel.querySelector('.terminal-close').focus({ preventScroll: true });
 }
 
 /* ──────────────────────────────────────────────
@@ -814,7 +951,7 @@ function openLightbox(images, startIndex) {
 
     lb.innerHTML = `
         <div class="lb-inner">
-            <img class="lb-img" src="${images[current]}" alt="Image ${current + 1} of ${images.length}">
+            ${mediaTag(images[current], 1600, 'lb-img', `Image ${current + 1} of ${images.length}`)}
         </div>
         <button class="lb-btn lb-prev mono" aria-label="Previous image">[&lt;]</button>
         <button class="lb-btn lb-next mono" aria-label="Next image">[&gt;]</button>
@@ -828,7 +965,7 @@ function openLightbox(images, startIndex) {
     lockScroll();
     requestAnimationFrame(() => requestAnimationFrame(() => lb.classList.add('open')));
 
-    const img     = lb.querySelector('.lb-img');
+    const inner   = lb.querySelector('.lb-inner');
     const counter = lb.querySelector('.lb-counter');
     const prevBtn = lb.querySelector('.lb-prev');
     const nextBtn = lb.querySelector('.lb-next');
@@ -841,11 +978,14 @@ function openLightbox(images, startIndex) {
     });
 
     function update() {
-        img.classList.add('lb-img--fade');
+        const media = inner.firstElementChild;
+        media?.classList.add('lb-img--fade');
         setTimeout(() => {
-            img.src = images[current];
-            img.alt = `Image ${current + 1} of ${images.length}`;
-            img.classList.remove('lb-img--fade');
+            inner.innerHTML = mediaTag(images[current], 1600, 'lb-img',
+                `Image ${current + 1} of ${images.length}`);
+            const next = inner.firstElementChild;
+            next?.classList.add('lb-img--fade');
+            requestAnimationFrame(() => next?.classList.remove('lb-img--fade'));
         }, 120);
         counter.textContent = `${String(current + 1).padStart(2, '0')} / ${String(images.length).padStart(2, '0')}`;
         prevBtn.style.opacity = current === 0 ? '0.25' : '1';

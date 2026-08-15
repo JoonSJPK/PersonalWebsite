@@ -174,7 +174,7 @@ T_0^{\,6} &amp;= T_0^{\,5}\,T_5^{\,6}
 <p>The expression <span data-tex>J^{\mathsf{T}} (J J^{\mathsf{T}})^{-1}</span> that fell out of the solve above is the Moore-Penrose pseudoinverse, written <span data-tex>J^{+}</span>. A few things worth knowing about it:</p>
 <ul><li>It is a generalization of a matrix inverse to matrices that are not square.</li><li>It is used when a system of linear equations <span data-tex>A x = b</span> does not have a unique solution, where it provides the best-fit approximate solution.</li><li>It computes the minimum-norm least-squares solution, the smallest answer that still gets as close as possible.</li></ul>
 <div data-tex data-display>\Delta\theta = J^{\mathsf{T}} (J J^{\mathsf{T}} + \lambda^2 I)^{-1}\,\Delta p</div>
-<figure class="figure"><img src="websiteImages/ur5e/task3_images/task3_demo.gif" alt="Task 3 Demo" loading="lazy"></figure>
+<figure class="figure"><video src="websiteImages/ur5e/task3_images/task3_demo.mp4" poster="websiteImages/ur5e/task3_images/task3_demo.poster.webp" autoplay muted loop playsinline aria-label="Task 3 Demo"></video></figure>
 <h2 id="full-jacobian-6x6-implementation">Full Jacobian (6x6) Implementation</h2>
 <p>As mentioned above, the Jacobian matrix used was only a 3x6 Jacobian which only contains information needed for position, not orientation. The following are the differences and additions I made to the algorithm to support the full 6x6 Jacobian matrix.</p>
 <p>Moving from the <span data-tex>3 \times 6</span> to the full <span data-tex>6 \times 6</span> Jacobian adds <strong>orientation</strong> control, so the end-effector is driven to a full target <em>pose</em> (position <strong>and</strong> orientation) instead of just a target point. This changes three things: the error becomes a 6-vector, the Jacobian gains three orientation rows, and the damped least-squares solve grows from <span data-tex>3 \times 3</span> to <span data-tex>6 \times 6</span>. The steps below describe only the differences and additions from the position-only version above.</p>
@@ -255,14 +255,14 @@ K_o\,e_o
 <p>When both are satisfied, the current <span data-tex>\theta</span> places the end-effector at the full target pose. Otherwise the loop returns to Step 1 and re-linearizes at the updated configuration.</p>
 <h2 id="full-pose-6x6-demo">Full Pose (6x6) Demo</h2>
 <p>The full 6×6 Jacobian driving the end-effector to the target pose (position and orientation):</p>
-<figure class="figure"><img src="websiteImages/ur5e/task3_images/task3_6x6_demo.gif" alt="Task 3 Full Pose Demo" loading="lazy"></figure>
+<figure class="figure"><video src="websiteImages/ur5e/task3_images/task3_6x6_demo.mp4" poster="websiteImages/ur5e/task3_images/task3_6x6_demo.poster.webp" autoplay muted loop playsinline aria-label="Task 3 Full Pose Demo"></video></figure>
 <h2 id="adding-a-gripper-franka-panda-hand">Adding a Gripper (Franka Panda Hand)</h2>
 <p>So far the IK drives the bare flange (the <code>attachment_site</code> at the tip of <code>wrist_3_link</code>) to the target. To let the arm actually pick up the bottle, I mounted a gripper on the end-effector. The model is the Franka Panda parallel-jaw hand, taken from Google DeepMind's MuJoCo Menagerie.</p>
 <ul class="doc-refs"><li><a href="https://github.com/google-deepmind/mujoco_menagerie/tree/main/franka_emika_panda" target="_blank" rel="noopener noreferrer">https://github.com/google-deepmind/mujoco_menagerie/tree/main/franka_emika_panda</a></li></ul>
 <h3 id="sourcing-the-model">Sourcing the model</h3>
 <p>I started with a Robotiq 3-Finger gripper, but a three-finger hand is hard to close reliably on a round object, and the only source for it was a URDF that needed translating into MJCF by hand. The Panda hand solves both problems. It is already written in MJCF, so it drops straight into <code>ur5e.xml</code>, and it is a simple parallel-jaw design: two fingers on prismatic (slide) joints with flat box pads, the same gripper MuJoCo uses in its own grasping demos. Flat pads squeezing in a straight line grasp far more dependably than three curling fingers.</p>
 <p>Because both models are MJCF, the only conflicts to clear up were shared names. The UR5e and the Panda both define a <code>black</code> material and <code>visual</code> and <code>collision</code> default classes, and MJCF names are global, so the Panda's were renamed to <code>panda_black</code>, <code>panda_visual</code>, and <code>panda_collision</code> to keep the two from colliding.</p>
-<figure class="figure"><img src="websiteImages/ur5e/task3_images/ee_path.png" alt="Task 3 Full Pose Demo" loading="lazy"></figure>
+<figure class="figure"><img src="websiteImages/ur5e/task3_images/ee_path.1600.webp" alt="Task 3 Full Pose Demo" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task3_images/ee_path.png'"></figure>
 <h2 id="grabbing-the-bottle">Grabbing the Bottle</h2>
 <p>With the hand mounted, I run a three-phase finite state machine:</p>
 <ul><li><strong>reach</strong>: IK drives the grip point to the bottle. The gripper starts open (<code>data.ctrl[grip_id] = 255</code>; on this actuator <code>255 = open</code>, <code>0 = closed</code>).</li><li><strong>close</strong>: once both <code>e_p</code> and <code>e_o</code> are under tolerance, the gripper closes (<code>data.ctrl[grip_id] = 0</code>) and holds for 2 s so the contact can settle before any motion.</li><li><strong>return</strong>: IK drives the loaded hand back to the home pose.</li></ul>
@@ -284,7 +284,7 @@ K_o\,e_o
 <pre><code class="lang-xml">&lt;general class="panda" name="gripper" tendon="split" forcerange="-140 140" ctrlrange="0 255"
   gainprm="0.1568627451 0 0" biasprm="0 -1000 -100"/&gt;</code></pre>
 <p>After stiffening, the same grasp holds the bottle with <strong>~14 N per jaw</strong> (well under the 70 N ceiling, so it never saturates), and the contact normal force rises from ~0.9 N to ~9 N. With ~14 N of squeeze and <code>μ = 5.0</code>, the available holding force is far above the bottle's weight, and it no longer slips during the reach, lift, or return.</p>
-<figure class="figure"><img src="websiteImages/ur5e/task3_images/gripper_bottle.gif" alt="Bottle Grasp Demo" loading="lazy"></figure>
+<figure class="figure"><video src="websiteImages/ur5e/task3_images/gripper_bottle.mp4" poster="websiteImages/ur5e/task3_images/gripper_bottle.poster.webp" autoplay muted loop playsinline aria-label="Bottle Grasp Demo"></video></figure>
                 </article>
             </div>
 

@@ -101,11 +101,26 @@ def inline(text):
 
 
 def image_tag(src, alt):
+    """Point at the web-sized derivative from tools/optimize_images.py.
+
+    Stills load the 1600 px WebP (with the original as an onerror fallback);
+    animated GIFs are served as the looping MP4 the same script produces.
+    """
     src = IMAGE_RENAMES.get(src, src)
     if src in MISSING_IMAGES:
         return ''
-    return ('<img src="%s%s" alt="%s" loading="lazy">'
-            % (IMAGE_BASE, src, html.escape(alt, quote=True)))
+    path = IMAGE_BASE + src
+    alt = html.escape(alt, quote=True)
+
+    if re.search(r'\.gif$', path, re.I):
+        clip = re.sub(r'\.gif$', '.mp4', path, flags=re.I)
+        poster = re.sub(r'\.gif$', '.poster.webp', path, flags=re.I)
+        return ('<video src="%s" poster="%s" autoplay muted loop playsinline '
+                'aria-label="%s"></video>' % (clip, poster, alt))
+
+    web = re.sub(r'\.(png|jpe?g)$', '.1600.webp', path, flags=re.I)
+    return ('<img src="%s" alt="%s" loading="lazy" '
+            'onerror="this.onerror=null;this.src=\'%s\'">' % (web, alt, path))
 
 
 def slug(text):

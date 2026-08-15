@@ -70,9 +70,9 @@
 <h2 id="model-setup">Model Setup</h2>
 <h3 id="placing-models">Placing models</h3>
 <p>Test object, a bottle, was made in Fusion360 and exported to a MuJoCo scene through the fusion2urdf tool. The UR5e model from MuJoCo Menagerie was placed into the scene alongside the test object.</p>
-<figure class="figure"><img src="websiteImages/ur5e/task1_images/test_bottle.png" alt="Test bottle" loading="lazy"></figure>
+<figure class="figure"><img src="websiteImages/ur5e/task1_images/test_bottle.1600.webp" alt="Test bottle" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task1_images/test_bottle.png'"></figure>
 <p><em>Figure 1: Bottle model designed in Fusion360</em></p>
-<figure class="figure"><img src="websiteImages/ur5e/task1_images/test_bottle_scene.png" alt="Test bottle in MuJoCo scene" loading="lazy"></figure>
+<figure class="figure"><img src="websiteImages/ur5e/task1_images/test_bottle_scene.1600.webp" alt="Test bottle in MuJoCo scene" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task1_images/test_bottle_scene.png'"></figure>
 <p><em>Figure 2: UR5e and bottle placed in MuJoCo scene</em></p>
 <h2 id="motor-modeling">Motor Modeling</h2>
 <p>The ur5e.xml configurations of the robot were changed from actuator &lt;general&gt; to &lt;motor&gt; to disable any preset damping or applied torque that would offset results from PID tuning.</p>
@@ -129,9 +129,9 @@
 <p>The t variable in the equation is a key factor when analyzing the effectiveness of chosen gains. When t is close to 0, the position of a joint is expectedly far from the target position. The t term therefore gives less of a penalty. The opposite is true once more time has passed: the longer the system stays away from the target postion, the more it will be penalized.</p>
 <p>This method allows me to test a wide range of PID gains by sweeping through ranges of all variables and scoring each combination; however, sweeping through every value of all 4 variables and going through each combination would not have been a efficient use of time. Therefore, I split the variables in to two groups: Kp/Kd and Ki/integral_limit. Even within these two groups I start the sweep in "big steps" of 20 for Ki and Kd. This allows me to find a smaller range of values to test using a step size of 1. The output of this process is a ITAE heat map with Kp and Kd values on each axis. The same process is done with Ki and integral limit (big step size is 5 for integral limit however) using the results of the previous sweep of Kp and Kd and keeping Kp and Kd as constants.</p>
 <p>The first run through was unsuccessful. Because the ITAE method give favorable scores to combinations that get to the target position the fastest without regard for torque limits, it gives values far beyond what is reasonable physically for the robot when considering torque limits. Although a torque limit of 150Nm and 28Nm was applied to size 1 and size 3 joints respectively, these gains were resulting in long saturation times.</p>
-<figure class="figure figure-grid"><img src="websiteImages/ur5e/task1.1_images/no_torque_penalty_kp.png" alt="Test bottle in MuJoCo scene" loading="lazy">
-<img src="websiteImages/ur5e/task1.1_images/no_torque_penalty_ki.png" alt="Test bottle in MuJoCo scene" loading="lazy">
-<img src="websiteImages/ur5e/task1.1_images/no_torque_penalty_image.png" alt="Test bottle in MuJoCo scene" loading="lazy"></figure>
+<figure class="figure figure-grid"><img src="websiteImages/ur5e/task1.1_images/no_torque_penalty_kp.1600.webp" alt="Test bottle in MuJoCo scene" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task1.1_images/no_torque_penalty_kp.png'">
+<img src="websiteImages/ur5e/task1.1_images/no_torque_penalty_ki.1600.webp" alt="Test bottle in MuJoCo scene" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task1.1_images/no_torque_penalty_ki.png'">
+<img src="websiteImages/ur5e/task1.1_images/no_torque_penalty_image.1600.webp" alt="Test bottle in MuJoCo scene" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task1.1_images/no_torque_penalty_image.png'"></figure>
 <p>Therefore, I added my own term to the ITAE equation: a penalty proporitonal to the amount of time the robots stays outside of the torque limits.</p>
 <pre><code>overage = np.maximum(0.0, np.abs(torques) - tau_max)
 penalty = float(np.sum(overage**2))
@@ -139,22 +139,22 @@ penalty = float(np.sum(overage**2))
 return itae + 1.0 * penalty</code></pre>
 <p>The square on each overage term penalizes larger values outside of the torque limits. The constant multiplied with penalty was set as an arbitrary value.</p>
 <p>The next result was much better at staying within torque limits; however the system felt very sluggish. This meant that the penalty coefficient was far too large. This is also seen by the program highly favoring lower Kp values, leading to flooring the lower end of the Kp range given.</p>
-<figure class="figure figure-grid"><img src="websiteImages/ur5e/task1.1_images/torque_penalty_1.0_kp.png" alt="Test bottle in MuJoCo scene" loading="lazy">
-<img src="websiteImages/ur5e/task1.1_images/torque_penalty_1.0_ki.png" alt="Test bottle in MuJoCo scene" loading="lazy">
-<img src="websiteImages/ur5e/task1.1_images/torque_penalty_1.0_error.png" alt="Test bottle in MuJoCo scene" loading="lazy"></figure>
+<figure class="figure figure-grid"><img src="websiteImages/ur5e/task1.1_images/torque_penalty_1.0_kp.1600.webp" alt="Test bottle in MuJoCo scene" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task1.1_images/torque_penalty_1.0_kp.png'">
+<img src="websiteImages/ur5e/task1.1_images/torque_penalty_1.0_ki.1600.webp" alt="Test bottle in MuJoCo scene" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task1.1_images/torque_penalty_1.0_ki.png'">
+<img src="websiteImages/ur5e/task1.1_images/torque_penalty_1.0_error.1600.webp" alt="Test bottle in MuJoCo scene" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task1.1_images/torque_penalty_1.0_error.png'"></figure>
 <p>After testing values between 0.0 and 1.0, a coefficient of 1e-8 was determined to output gains with a good balance of staying within torque limits and velocity.</p>
-<figure class="figure figure-grid"><img src="websiteImages/ur5e/task1.1_images/torque_penalty_0.5_kp.png" alt="Test bottle in MuJoCo scene" loading="lazy">
-<img src="websiteImages/ur5e/task1.1_images/torque_penalty_0.5_ki.png" alt="Test bottle in MuJoCo scene" loading="lazy">
-<img src="websiteImages/ur5e/task1.1_images/torque_penalty_0.5_error.png" alt="Test bottle in MuJoCo scene" loading="lazy"></figure>
-<figure class="figure figure-grid"><img src="websiteImages/ur5e/task1.1_images/torque_penalty_1e-9_kp.png" alt="Test bottle in MuJoCo scene" loading="lazy">
-<img src="websiteImages/ur5e/task1.1_images/torque_penalty_1e-9_ki.png" alt="Test bottle in MuJoCo scene" loading="lazy"></figure>
-<figure class="figure figure-grid"><img src="websiteImages/ur5e/task1.1_images/torque_penalty_1e-8_kp.png" alt="Test bottle in MuJoCo scene" loading="lazy">
-<img src="websiteImages/ur5e/task1.1_images/torque_penalty_1e-8_ki.png" alt="Test bottle in MuJoCo scene" loading="lazy">
-<img src="websiteImages/ur5e/task1.1_images/torque_penalty_1e-8_error.png" alt="Test bottle in MuJoCo scene" loading="lazy"></figure>
+<figure class="figure figure-grid"><img src="websiteImages/ur5e/task1.1_images/torque_penalty_0.5_kp.1600.webp" alt="Test bottle in MuJoCo scene" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task1.1_images/torque_penalty_0.5_kp.png'">
+<img src="websiteImages/ur5e/task1.1_images/torque_penalty_0.5_ki.1600.webp" alt="Test bottle in MuJoCo scene" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task1.1_images/torque_penalty_0.5_ki.png'">
+<img src="websiteImages/ur5e/task1.1_images/torque_penalty_0.5_error.1600.webp" alt="Test bottle in MuJoCo scene" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task1.1_images/torque_penalty_0.5_error.png'"></figure>
+<figure class="figure figure-grid"><img src="websiteImages/ur5e/task1.1_images/torque_penalty_1e-9_kp.1600.webp" alt="Test bottle in MuJoCo scene" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task1.1_images/torque_penalty_1e-9_kp.png'">
+<img src="websiteImages/ur5e/task1.1_images/torque_penalty_1e-9_ki.1600.webp" alt="Test bottle in MuJoCo scene" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task1.1_images/torque_penalty_1e-9_ki.png'"></figure>
+<figure class="figure figure-grid"><img src="websiteImages/ur5e/task1.1_images/torque_penalty_1e-8_kp.1600.webp" alt="Test bottle in MuJoCo scene" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task1.1_images/torque_penalty_1e-8_kp.png'">
+<img src="websiteImages/ur5e/task1.1_images/torque_penalty_1e-8_ki.1600.webp" alt="Test bottle in MuJoCo scene" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task1.1_images/torque_penalty_1e-8_ki.png'">
+<img src="websiteImages/ur5e/task1.1_images/torque_penalty_1e-8_error.1600.webp" alt="Test bottle in MuJoCo scene" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task1.1_images/torque_penalty_1e-8_error.png'"></figure>
 <h2 id="saturation-tradeoffs">Saturation Tradeoffs</h2>
 <p>Saturation happens when the controller demands for more torque than the actuator can deliver. The <code>ctrlrange</code> in the motor model caps each joint at its physical limit (150 Nm for the three large joints, 28 Nm for the wrist), so any commanded torque above that ceiling is clamped. While an actuator is saturated, the loop is effectively open: the integral and derivative terms keep computing corrections, but the joint only ever receives the maximum torque, so the controller temporarily loses its ability to shape the response. This could cause integral windup where the I term keeps accumulating leading to overshooting.</p>
 <p>This is the tradeoff the torque-penalty weight λ controls. A low λ lets the ITAE sweep favor aggressive Kp/Kd that drive the joint hard, giving a fast rise but has longer saturation time. A high λ punishes any excursion past the limit, so the sweep retreats to gentle gains that never saturate but respond sluggishly and leave a larger steady-state error:</p>
-<figure class="figure"><img src="websiteImages/ur5e/task1.1_images/lambda_sweep.png" alt="Torque-penalty" loading="lazy"></figure>
+<figure class="figure"><img src="websiteImages/ur5e/task1.1_images/lambda_sweep.1600.webp" alt="Torque-penalty" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task1.1_images/lambda_sweep.png'"></figure>
 <ul><li><strong>Peak commanded torque</strong> (top, normalized so <code>1.0</code> is the actuator limit): at λ = 0 several joints are commanded above their limit, meaning they saturate. As λ grows the peaks fall under the line.</li><li><strong>Saturation duration</strong> (middle): the time each joint spends pinned at its limit falls toward zero as λ increases.</li><li><strong>Steady-state error</strong> (bottom): error grows as the gains get gentler, and worsens sharply at the largest λ values.</li></ul>
 <p>Raising λ helps the top two panels but hurts the bottom one, so no single λ is best at everything. I picked λ = <code>1e-8</code> (highlighted) as the sweet spot: the joints stay just under their torque limit, barely saturate, and still keep the steady-state error low before the larger λ values make the robot too sluggish.</p>
 <h2 id="overshoot-problem">Overshoot Problem</h2>

@@ -100,7 +100,7 @@ self.t3 = 8</code></pre>
 <div data-tex data-display>\text{alignment} = \max\!\left(0,\ 1 - \frac{\overline{err}}{v_{range}}\right) \times 100</div>
 <p>I didn't just want express'did it match or not the target velocity', I wanted the score to scale proportionally with how large the error was. Although this linear scaling is floored at 0% if the average error meets or exceeds the joint's own peak velocity range.".</p>
 <p>Adding a position vs time graph was also a helpful visualization of how the robot is moving.</p>
-<figure class="figure"><img src="websiteImages/ur5e/task2.2_images/no_feedforward.png" alt="no feedforward" loading="lazy"></figure>
+<figure class="figure"><img src="websiteImages/ur5e/task2.2_images/no_feedforward.1600.webp" alt="no feedforward" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task2.2_images/no_feedforward.png'"></figure>
 <p>The first test showed relatively poor alignment to the velocity graph with a overall alignment of 98.4%.</p>
 <h2 id="feedforward">Feedforward</h2>
 <p>Pure feedback control is reactive: only produces torque once a tracking error already exists. When tracking a moving setpoint like the trapezoidal velocity profile, this means the loop has to build up a position error just to keep producing the torque needed to track a non-zero target velocity, which is the lag/error seen in Initial Testing.</p>
@@ -108,16 +108,16 @@ self.t3 = 8</code></pre>
 <div data-tex data-display>u(t) = K_p e(t) + K_i \int_{0}^{t} e(\tau) d\tau + K_d \frac{de(t)}{dt} + K_v \dot{q}_{target}(t)</div>
 <ul><li><a href="https://apmonitor.com/pdc/index.php/Main/FeedforwardControl" target="_blank" rel="noopener noreferrer">https://apmonitor.com/pdc/index.php/Main/FeedforwardControl</a></li><li><a href="https://web.stanford.edu/class/archive/ee/ee392m/ee392m.1034/Lecture5_Feedfrwrd.pdf" target="_blank" rel="noopener noreferrer">https://web.stanford.edu/class/archive/ee/ee392m/ee392m.1034/Lecture5_Feedfrwrd.pdf</a></li></ul>
 <p>The following was the result of the first feedback implementation.</p>
-<figure class="figure"><img src="websiteImages/ur5e/task2.2_images/no_feedforward.png" alt="no feedforward" loading="lazy"></figure>
+<figure class="figure"><img src="websiteImages/ur5e/task2.2_images/no_feedforward.1600.webp" alt="no feedforward" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task2.2_images/no_feedforward.png'"></figure>
 <p>Qualitative observations of the graph show much better alignment during the linear and constant sections of the trapazoidal trajectory; however, performance degrades at the trapezoid's corners (t1, t2, t3), where the acceleration changes discontinuously. These jerk discontinuities, for a moment, desynchronize the feedforward term from the system's actual achievable response. Quantitative observations show an improvement all around.</p>
 <ul><li>Average error: 0.0082 rad/s -&gt; 0.0021 rad/s</li><li>Max error: 0.0410 rad/s -&gt; 0.0162 rad/s</li><li>Alignment: 98.4% -&gt; 99.6%</li></ul>
-<figure class="figure"><img src="websiteImages/ur5e/task2.2_images/feedforward.png" alt="feedforward" loading="lazy"></figure>
+<figure class="figure"><img src="websiteImages/ur5e/task2.2_images/feedforward.1600.webp" alt="feedforward" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task2.2_images/feedforward.png'"></figure>
 <p>At this point, I noticed the least performing joint was joint 2. The alignment of joint 2 was qualitatively and quantitatively worse than the other joints relatively (97.8% compared to ~99.7 of other joints).</p>
 <p>I suspected this was due to joint 2 was carrying the rest of the arm and fighting against gravity. One solution is increasing the Kp and Ki gains of joint 2. Higher Kp means the controller decreases the required amount of error needed for the same load torque. Higher Ki will keep accumulating residual error over time and add torque until there is no sag from joint 2.</p>
 <p>Increasing Kp from 375 to 475 and Ki from 300 to 350 gave marginally better results.</p>
-<figure class="figure"><img src="websiteImages/ur5e/task2.2_images/kp475_ki350.png" alt="no feedforward" loading="lazy"></figure>
+<figure class="figure"><img src="websiteImages/ur5e/task2.2_images/kp475_ki350.1600.webp" alt="no feedforward" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task2.2_images/kp475_ki350.png'"></figure>
 <p>I continuously increased Kp and Ki until I no longer saw improvement. This was at Kp = 1575 and Ki = 900 where joint 2 performance nearly matched that of the other joints.</p>
-<figure class="figure"><img src="websiteImages/ur5e/task2.2_images/kp1575_ki900.png" alt="no feedforward" loading="lazy"></figure>
+<figure class="figure"><img src="websiteImages/ur5e/task2.2_images/kp1575_ki900.1600.webp" alt="no feedforward" loading="lazy" onerror="this.onerror=null;this.src='websiteImages/ur5e/task2.2_images/kp1575_ki900.png'"></figure>
 <p>The problem with high Kp and Ki values is possible system instability to small errors and external noise in real world scenerios; although this was not seen in simulation.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>Task 2 generalized the trapezoidal velocity profile from Task 1's fixed-coefficient implementation into a reusable model, then used it to track a full joint-space trajectory between two joint configurations.</p>

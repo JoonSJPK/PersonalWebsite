@@ -43,7 +43,9 @@ body {
     font-family: var(--serif);
     line-height: 1.6;
     cursor: none;
-    overflow-x: hidden;
+    /* No `overflow-x` here — it would make <body> its own scroll container,
+       which silently breaks `position: sticky` for everything inside it (the
+       writeup table of contents). `html` above already clips the x axis. */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -253,9 +255,9 @@ ul { list-style: none; }
     font-size: 0.6rem;
     letter-spacing: 0.07em;
     color: var(--muted);
-    border: 1px solid var(--border);
-    padding: 2px 7px;
-    transition: border-color 0.2s, color 0.2s;
+    /* Bracketed already — a border around [KICAD] boxes it twice. */
+    padding: 2px 0;
+    transition: color 0.2s;
 }
 
 /* ── Scroll Reveal ── */
@@ -688,7 +690,8 @@ ul { list-style: none; }
     color: var(--muted);
 }
 
-.project-image-wrap img {
+.project-image-wrap img,
+.project-image-wrap video {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -696,7 +699,8 @@ ul { list-style: none; }
     transition: filter 0.45s ease, transform 0.45s ease;
 }
 
-.project-entry:hover .project-image-wrap img {
+.project-entry:hover .project-image-wrap img,
+.project-entry:hover .project-image-wrap video {
     filter: grayscale(0%) contrast(1);
     transform: scale(1.025);
 }
@@ -774,11 +778,10 @@ ul { list-style: none; }
 .project-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem;
+    gap: 0.3rem 0.9rem;
 }
 
 .project-entry:hover .tag {
-    border-color: var(--text);
     color: var(--text);
 }
 
@@ -813,20 +816,6 @@ ul { list-style: none; }
     font-weight: 600;
     letter-spacing: 0.24em;
     color: var(--text);
-}
-
-/* A hairline carries the label the rest of the way across the card, so the
-   writeup links read as their own block rather than trailing off the tags. */
-.project-docs-label::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-    transition: background 0.22s;
-}
-
-.project-entry:hover .project-docs-label::after {
-    background: var(--text);
 }
 
 .project-doc-link {
@@ -1024,48 +1013,74 @@ a.contact-val {
     color: var(--border);
 }
 
-/* ── PROJECT MODAL ── */
-.project-modal {
+/* ── PROJECT EXPANSION PANEL ──
+   The card itself grows into this; it is not a separate window. */
+.px-scrim {
     position: fixed;
     inset: 0;
     background: rgba(10, 9, 7, 0.72);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
+    z-index: 1990;
     opacity: 0;
-    transition: opacity 0.3s;
-    padding: 1rem;
+    transition: opacity 0.32s ease;
 }
 
-.project-modal.open {
+.px-scrim.px-open { opacity: 1; }
+
+.px-panel {
+    position: fixed;
+    inset: 3vh 3vw;
+    inset: 3dvh 3vw;
+    z-index: 2000;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform-origin: top left;
+    /* The open/close travel is a FLIP from the card's footprint; the transform
+       is written inline by the script, so only the timing lives here. */
+    transition: transform 0.42s cubic-bezier(0.22, 0.61, 0.36, 1),
+                opacity 0.28s ease;
+}
+
+/* Contents hold still while the frame is mid-flight, then settle in. */
+.px-panel .px-bar,
+.px-panel .px-body {
+    opacity: 0;
+    transition: opacity 0.28s ease 0.12s;
+}
+
+.px-panel.px-open .px-bar,
+.px-panel.px-open .px-body {
     opacity: 1;
 }
 
-.modal-terminal {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    width: min(740px, 100%);
-    max-height: 88vh;
-    max-height: 88dvh;
-    display: flex;
-    flex-direction: column;
-    transform: translateY(22px);
-    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+/* The card underneath is invisible while its panel stands in for it. */
+.project-box.px-source {
+    opacity: 0;
 }
 
-.project-modal.open .modal-terminal {
-    transform: translateY(0);
-}
-
-.terminal-titlebar {
+.px-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.68rem 1.2rem;
+    gap: 1rem;
+    padding: 0.7rem 1.3rem;
     border-bottom: 1px solid var(--border);
     background: var(--surface);
     flex-shrink: 0;
+}
+
+.px-bar-end {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.px-hint {
+    font-size: 0.55rem;
+    letter-spacing: 0.22em;
+    color: var(--border);
 }
 
 .terminal-title {
@@ -1091,52 +1106,145 @@ a.contact-val {
     border-color: var(--accent);
 }
 
-.terminal-body {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    padding: 1.4rem 1.2rem;
+/* Focus lands here when a panel opens; only ring it for keyboard users. */
+.terminal-close:focus { outline: none; }
+.terminal-close:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.px-body {
     flex: 1;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 2.2rem;
+    padding: 1.6rem 1.6rem 1.6rem;
 }
 
-.terminal-body::-webkit-scrollbar { width: 4px; }
-.terminal-body::-webkit-scrollbar-track { background: transparent; }
-.terminal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+/* Odd entries keep their image on the left, even ones on the right — the same
+   alternation the cards use, so nothing jumps sides on expand. */
+.px-panel.px-media-right .px-media { order: 2; }
+.px-panel.px-no-media .px-body { grid-template-columns: 1fr; }
 
-.terminal-gallery {
+/* ── panel gallery ── */
+/* min-width: 0 on both columns — grid and flex items default to min-content,
+   and the thumbnail strip's min-content is the whole un-scrolled row. */
+.px-media {
+    min-width: 0;
     display: flex;
-    gap: 0.7rem;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x proximity;
-    margin-bottom: 1.75rem;
-    padding-bottom: 0.5rem;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.75rem;
+    min-height: 0;
 }
 
-.terminal-gallery img { scroll-snap-align: start; }
+/* The frame hugs the image rather than letterboxing it inside a column-tall
+   box — no dead bands above and below the artwork. */
+.px-stage {
+    position: relative;
+    flex: 0 1 auto;
+    min-height: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 0;
+    cursor: none;
+    overflow: hidden;
+}
 
-.terminal-gallery::-webkit-scrollbar { height: 3px; }
-.terminal-gallery::-webkit-scrollbar-track { background: transparent; }
-.terminal-gallery::-webkit-scrollbar-thumb { background: var(--border); }
-
-.terminal-gallery img {
-    height: 155px;
-    width: auto;
-    flex-shrink: 0;
-    object-fit: cover;
-    filter: grayscale(15%);
-    transition: filter 0.3s;
+/* Wraps whichever media the current slide is — a still or a looping clip. */
+.px-stage-media {
     display: block;
 }
 
-.terminal-gallery img:hover {
-    filter: grayscale(0%);
+.px-stage-img {
+    width: 100%;
+    height: auto;
+    max-height: 62vh;
+    object-fit: contain;
+    display: block;
 }
+
+.px-stage-hint {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.53rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    background: var(--bg);
+    opacity: 0;
+    transition: opacity 0.25s;
+}
+
+.px-stage:hover .px-stage-hint { opacity: 1; }
+
+.px-thumbs {
+    min-width: 0;
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    flex-shrink: 0;
+    padding-bottom: 0.3rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+}
+
+.px-thumbs::-webkit-scrollbar { height: 3px; }
+.px-thumbs::-webkit-scrollbar-track { background: transparent; }
+.px-thumbs::-webkit-scrollbar-thumb { background: var(--border); }
+
+.px-thumb {
+    flex: 0 0 auto;
+    width: 74px;
+    height: 52px;
+    padding: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    cursor: none;
+    opacity: 0.55;
+    transition: opacity 0.2s, border-color 0.2s;
+}
+
+.px-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: grayscale(35%);
+}
+
+.px-thumb:hover { opacity: 0.85; }
+
+.px-thumb.active {
+    opacity: 1;
+    border-color: var(--accent);
+}
+
+.px-thumb.active img { filter: none; }
+
+.px-counter {
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    flex-shrink: 0;
+}
+
+/* ── panel copy column ── */
+.px-info {
+    overflow-y: auto;
+    min-height: 0;
+    min-width: 0;
+    padding-right: 0.6rem;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+}
+
+.px-info::-webkit-scrollbar { width: 4px; }
+.px-info::-webkit-scrollbar-track { background: transparent; }
+.px-info::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
 .terminal-section {
     margin-bottom: 1.5rem;
@@ -1161,7 +1269,7 @@ a.contact-val {
 .tech-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem;
+    gap: 0.3rem 0.9rem;
 }
 
 .feature-list {
@@ -1357,14 +1465,13 @@ body.lightbox-open #cursor-follower::after {
     border-color: var(--bg);
 }
 
-/* Make gallery images show pointer intent */
-.terminal-gallery img {
-    cursor: none;
-    transition: filter 0.3s, transform 0.2s;
+/* Make gallery thumbnails show pointer intent */
+.px-thumb {
+    transition: opacity 0.2s, border-color 0.2s, transform 0.2s;
 }
 
-.terminal-gallery img:hover {
-    transform: scale(1.02);
+.px-thumb:hover {
+    transform: scale(1.03);
 }
 
 /* ── RESPONSIVE ── */
@@ -1389,6 +1496,21 @@ body.lightbox-open #cursor-follower::after {
     .project-entry:nth-child(even) .project-box > * {
         direction: ltr;
     }
+
+    /* Cards are single-column here, so the panel has no side to preserve —
+       the gallery caps its height and sits above the copy. */
+    .px-body {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(0, 0.9fr) minmax(0, 1.1fr);
+        gap: 1.2rem;
+        padding: 1.1rem var(--pad) 1.2rem;
+    }
+
+    .px-panel.px-media-right .px-media { order: 0; }
+
+    .px-hint { display: none; }
+
+    .px-info { padding-right: 0.3rem; }
 
     .skills-grid {
         grid-template-columns: 1fr;
@@ -1469,26 +1591,18 @@ body.lightbox-open #cursor-follower::after {
         margin-bottom: 2.5rem;
     }
 
-    /* The modal becomes a bottom sheet — full width, thumb-reachable close. */
-    .project-modal {
-        padding: 0;
-        align-items: flex-end;
+    /* No room for two columns — the gallery stacks above the copy and the
+       panel takes the whole screen. */
+    .px-panel {
+        inset: 0;
+        border: none;
     }
 
-    .modal-terminal {
-        width: 100%;
-        max-height: 92vh;
-        max-height: 92dvh;
-        border-left: none;
-        border-right: none;
-        border-bottom: none;
+    .px-body {
+        padding-bottom: max(1.2rem, env(safe-area-inset-bottom, 0px));
     }
 
-    .terminal-body {
-        padding: 1.2rem var(--pad) max(1.2rem, env(safe-area-inset-bottom, 0px));
-    }
-
-    .terminal-titlebar {
+    .px-bar {
         padding: 0.6rem var(--pad);
     }
 
@@ -1506,8 +1620,9 @@ body.lightbox-open #cursor-follower::after {
         margin-left: 0.6rem;
     }
 
-    .terminal-gallery img {
-        height: 130px;
+    .px-thumb {
+        width: 62px;
+        height: 44px;
     }
 
     /* Lightbox arrows move off the image and down into thumb range. */
@@ -1628,6 +1743,14 @@ body.lightbox-open #cursor-follower::after {
         animation: none;
     }
 
+    /* The panel appears at full size instead of growing out of the card. */
+    .px-panel,
+    .px-panel .px-bar,
+    .px-panel .px-body,
+    .px-scrim {
+        transition: none;
+    }
+
     .project-image-wrap img {
         transition: none;
     }
@@ -1652,7 +1775,8 @@ body.lightbox-open #cursor-follower::after {
     .project-doc-link,
     .doc-link,
     .terminal-close,
-    .terminal-gallery img,
+    .px-stage,
+    .px-thumb,
     .video-frame-wrap,
     .lb-btn,
     .lb-close,
@@ -1661,7 +1785,7 @@ body.lightbox-open #cursor-follower::after {
         cursor: auto;
     }
 
-    a, button, [role="button"], .project-entry, .terminal-gallery img {
+    a, button, [role="button"], .project-entry, .px-stage, .px-thumb {
         cursor: pointer;
     }
 }
