@@ -30,6 +30,9 @@ html {
     scroll-behavior: smooth;
     font-size: 16px;
     overflow-x: hidden;
+    /* The hero collapses its own height as it dissolves; scroll anchoring would
+       "helpfully" cancel that out by shifting scrollY to match. */
+    overflow-anchor: none;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
 }
@@ -259,12 +262,20 @@ ul { list-style: none; }
 .reveal {
     opacity: 0;
     transform: translateY(18px);
-    transition: opacity 0.55s ease, transform 0.55s ease;
+    filter: blur(10px);
+    transition: opacity 0.55s ease, transform 0.55s ease, filter 0.55s ease;
 }
 
 .reveal.visible {
     opacity: 1;
     transform: translateY(0);
+    filter: blur(0px);
+}
+
+/* Once the blur-in has played out, drop the filter entirely: a lingering
+   `blur(0)` still forces a compositing layer and a containing block. */
+.reveal.reveal-done {
+    filter: none;
 }
 
 /* ── HERO ── */
@@ -279,12 +290,20 @@ ul { list-style: none; }
     position: relative;
     overflow: hidden;
     padding-top: var(--nav-h);
+    /* Driven by the scroll handler: 0 = hero at rest, 1 = fully blurred out. */
+    --hero-out: 0;
+    /* As the hero dissolves it also gives its space back, so the content below
+       rises into the vacated half of the viewport instead of leaving a blank
+       band. Scroll anchoring is off (see `html`) so the browser doesn't fight
+       this by re-adjusting scrollY. */
+    margin-bottom: calc(var(--hero-out) * -40vh);
+    margin-bottom: calc(var(--hero-out) * -40svh);
 }
 
 #asciiCanvas {
     position: absolute;
     inset: 0;
-    opacity: 0.045;
+    opacity: calc(0.045 * (1 - var(--hero-out)));
     pointer-events: none;
     z-index: 0;
 }
@@ -298,6 +317,16 @@ ul { list-style: none; }
     display: flex;
     flex-direction: column;
     gap: 2.5rem;
+    /* Scroll-linked, so no transition — the blur tracks the wheel directly. */
+    opacity: calc(1 - var(--hero-out));
+    filter: blur(calc(var(--hero-out) * 16px));
+    transform: translateY(calc(var(--hero-out) * -2.5rem));
+}
+
+/* Fully faded out: stop it swallowing clicks meant for the content behind. */
+.hero-section.hero-dissolved .hero-container {
+    pointer-events: none;
+    visibility: hidden;
 }
 
 .hero-name-block {
@@ -365,6 +394,14 @@ ul { list-style: none; }
 @keyframes fadePulse {
     0%, 100% { opacity: 1; }
     50%       { opacity: 0.3; }
+}
+
+/* The hero pulls this section up over itself while dissolving; keep the
+   incoming content painting above the outgoing hero, on its own ground. */
+.projects-section {
+    position: relative;
+    z-index: 1;
+    background: var(--bg);
 }
 
 /* ── ABOUT ── */
@@ -1551,7 +1588,15 @@ body.lightbox-open #cursor-follower::after {
     .reveal {
         opacity: 1;
         transform: none;
+        filter: none;
         transition: none;
+    }
+
+    /* No scroll-linked dissolve either — the hero just scrolls away. */
+    .hero-container {
+        opacity: 1;
+        filter: none;
+        transform: none;
     }
 
     .hero-scroll {

@@ -452,6 +452,45 @@ function initSkillBars() {
 }
 
 /* ──────────────────────────────────────────────
+   HERO DISSOLVE — the title page blurs out as the
+   content below blurs in, both driven by the same
+   first swipe of scroll.
+────────────────────────────────────────────── */
+/* Fraction of the hero's height it gives back as it dissolves — must match the
+   `margin-bottom` collapse in the `.hero-section` rule. */
+const HERO_COLLAPSE = 0.40;
+
+function initHeroDissolve() {
+    const hero = document.getElementById('hero');
+    if (!hero) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    // Ramp over roughly half a viewport: short enough that the hero is gone by
+    // the time the projects header has finished revealing itself.
+    const rampOf = () => Math.max(hero.offsetHeight * 0.5, 1);
+    let ramp = rampOf();
+    let queued = false;
+
+    function apply() {
+        queued = false;
+        const p = Math.min(Math.max(window.scrollY / ramp, 0), 1);
+        hero.style.setProperty('--hero-out', p.toFixed(3));
+        hero.classList.toggle('hero-dissolved', p >= 0.995);
+    }
+
+    function onScroll() {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(apply);
+    }
+
+    hero.classList.add('hero-dissolving');
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', () => { ramp = rampOf(); onScroll(); });
+    apply();
+}
+
+/* ──────────────────────────────────────────────
    SCROLL REVEAL
 ────────────────────────────────────────────── */
 function initScrollReveal() {
@@ -468,6 +507,13 @@ function initScrollReveal() {
             const delay = Math.min(idx * 75, 280);
             entry.target.style.transitionDelay = delay + 'ms';
             entry.target.classList.add('visible');
+            // Not `once` — opacity/transform finish first and would consume it.
+            const el = entry.target;
+            el.addEventListener('transitionend', function onEnd(e) {
+                if (e.target !== el || e.propertyName !== 'filter') return;
+                el.classList.add('reveal-done');
+                el.removeEventListener('transitionend', onEnd);
+            });
             observer.unobserve(entry.target);
         });
     }, { threshold: 0.08, rootMargin: '0px 0px -36px 0px' });
@@ -537,6 +583,17 @@ function initMobileNav() {
    SMOOTH SCROLL
 ────────────────────────────────────────────── */
 function initSmoothScroll() {
+    const hero = document.getElementById('hero');
+
+    /* Anything below the hero is still going to rise by whatever is left of the
+       hero's collapse, so aim at where the target will be, not where it is. */
+    function collapseRemaining(target) {
+        // No dissolve (reduced motion) means no collapse to compensate for.
+        if (!hero || target === hero || !hero.classList.contains('hero-dissolving')) return 0;
+        const p = parseFloat(getComputedStyle(hero).getPropertyValue('--hero-out')) || 0;
+        return hero.offsetHeight * HERO_COLLAPSE * (1 - p);
+    }
+
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', e => {
             const target = document.querySelector(anchor.getAttribute('href'));
@@ -544,7 +601,8 @@ function initSmoothScroll() {
             e.preventDefault();
             const headerH = document.getElementById('header')?.offsetHeight ?? 52;
             window.scrollTo({
-                top: target.getBoundingClientRect().top + window.scrollY - headerH,
+                top: target.getBoundingClientRect().top + window.scrollY - headerH
+                     - collapseRemaining(target),
                 behavior: 'smooth'
             });
         });
@@ -823,6 +881,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initHeroTypewriter();
     initAsciiPortrait();
     initSkillBars();
+    initHeroDissolve();
     initScrollReveal();
     initNavHighlight();
     initMobileNav();
