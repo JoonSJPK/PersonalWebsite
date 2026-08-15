@@ -491,6 +491,51 @@ function initHeroDissolve() {
 }
 
 /* ──────────────────────────────────────────────
+   PROJECT EXPANSION — each entry unfolds as it
+   scrolls into view and folds back on the way out.
+────────────────────────────────────────────── */
+function initProjectExpansion() {
+    const entries = Array.from(document.querySelectorAll('.project-entry'));
+    if (!entries.length) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    let queued = false;
+
+    function apply() {
+        queued = false;
+        const vh = window.innerHeight;
+        // Finish the unfold a little before the entry reaches the very edge,
+        // so it is already open by the time it is comfortably readable.
+        const inset = vh * 0.08;
+        const top = inset;
+        const bottom = vh - inset;
+
+        entries.forEach(entry => {
+            const r = entry.getBoundingClientRect();
+            const visible = Math.max(0, Math.min(r.bottom, bottom) - Math.max(r.top, top));
+            // Entries taller than the viewport count as open once they own most
+            // of the screen; short ones once they are fully inside it.
+            const denom = Math.max(Math.min(r.height, vh * 0.7), 1);
+            const t = Math.min(visible / denom, 1);
+            // Smoothstep — no hard corners at either end of the travel.
+            const focus = t * t * (3 - 2 * t);
+            entry.style.setProperty('--focus', focus.toFixed(3));
+        });
+    }
+
+    function onScroll() {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(apply);
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    window.addEventListener('load', onScroll);
+    apply();
+}
+
+/* ──────────────────────────────────────────────
    SCROLL REVEAL
 ────────────────────────────────────────────── */
 function initScrollReveal() {
@@ -882,6 +927,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initAsciiPortrait();
     initSkillBars();
     initHeroDissolve();
+    initProjectExpansion();
     initScrollReveal();
     initNavHighlight();
     initMobileNav();

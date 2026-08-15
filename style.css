@@ -601,6 +601,22 @@ ul { list-style: none; }
     cursor: none;
     transition: background 0.22s ease;
     outline: none;
+    /* How far this entry has scrolled into view: 0 = edge of the viewport,
+       1 = fully open. Driven per frame by the scroll handler; defaults to 1 so
+       the resting state is the open one without JS. */
+    --focus: 1;
+}
+
+/* Scroll-linked expansion — the entry unfolds as it scrolls into view and
+   folds back as it leaves. Applied to the inner box, never to .project-entry
+   itself, whose transform belongs to the .reveal animation. */
+.project-box {
+    transform: scale(calc(0.972 + var(--focus) * 0.028));
+    transform-origin: center;
+}
+
+.project-index {
+    opacity: calc(0.25 + var(--focus) * 0.75);
 }
 
 .project-entry:first-child {
@@ -639,6 +655,8 @@ ul { list-style: none; }
     overflow: hidden;
     aspect-ratio: 3 / 2;
     background: var(--surface);
+    /* The frame itself opens out of a letterboxed slit as the entry arrives. */
+    clip-path: inset(calc((1 - var(--focus)) * 14%) calc((1 - var(--focus)) * 7%));
 }
 
 .project-image-portrait {
@@ -721,6 +739,9 @@ ul { list-style: none; }
     display: flex;
     flex-direction: column;
     gap: 0.8rem;
+    /* Copy settles up into place a beat behind the frame opening. */
+    opacity: calc(0.35 + var(--focus) * 0.65);
+    transform: translateY(calc((1 - var(--focus)) * 14px));
 }
 
 .project-title {
